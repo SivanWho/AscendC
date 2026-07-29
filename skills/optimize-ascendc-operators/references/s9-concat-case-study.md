@@ -36,3 +36,22 @@ Three independent official runs reported 8.70, 8.92, and 8.84 us; their median i
 ## ABI note
 
 CANN already defines an operator named `Concat`. Registering a custom dynamic-input operator under that internal name can collide with built-in metadata. Register an internal name such as `ConcatCustom`, let opbuild generate `aclnnConcatCustom`, and expose compatibility wrappers for both `aclnnConcatGetWorkspaceSize` and `aclnnConcat` so the untouched official extension finds the standard symbols.
+
+## Many-input metadata path
+
+When the dynamic input count exceeds the fixed tiling arrays, do not recompute
+each axis prefix by scanning descriptors from input zero for every task. That
+pattern is O(N²) and becomes scalar-bound. Keep a monotonically advancing
+descriptor cursor per core and row task so each core scans the list once.
+
+Starting every available vector core can still multiply descriptor traffic.
+For the out-of-line metadata path, cap block dim by a payload-size target while
+leaving the small inline path unchanged. On CANN 8.5 / Ascend 910B4, a 256-input
+synthetic case improved from 56.90 us to 34.23 us median (39.8%) when block dim
+fell from 40 to 8; the nine-input public geometry remained within noise at
+8.68 us versus 8.60 us.
+
+Appending a prefix table to raw tiling data was rejected because the available
+tiling buffer could not reliably hold the extra N+1 64-bit entries. Capacity
+failures must be tested at 129 and the ACLNN maximum of 256 inputs before using
+such a scheme.

@@ -1,0 +1,8 @@
+version,case,input_count,block_dim,count,min_us,median_us,mean_us,max_us,aiv_scalar_ratio
+baseline,official,9,9,30,8.06,8.60,8.919,12.06,0.472
+baseline,many129,129,40,30,30.06,35.18,37.128,45.74,0.908
+baseline,many256,256,40,30,46.70,56.90,56.849,75.00,0.944
+cursor_only,many256,256,40,30,36.92,47.13,48.060,57.82,0.928
+final,official,9,9,30,8.20,8.68,8.939,12.58,0.473
+final,many129,129,3,30,31.44,34.41,34.714,44.86,0.405
+final,many256,256,8,30,31.76,34.23,34.551,45.62,0.870
