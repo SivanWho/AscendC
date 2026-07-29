@@ -1,0 +1,1055 @@
+# ----------------------------------------------------------------------------
+# Copyright (c) 2025 Huawei Technologies Co., Ltd.
+# This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+# CANN Open Software License Agreement Version 2.0 (the "License").
+# Please refer to the License for details. You may not use this file except in compliance with the License.
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+# See LICENSE in the root of the software repository for the full text of the License.
+# ----------------------------------------------------------------------------
+ops_math:
+  commiter:
+    "zhou-qilong"
+  team: "ops_math" ##组件名称
+  src:
+    release:
+      - random
+    unrelease:
+      - "*/*/tests"
+      - "*/*/examples"
+      - "*/*/*/op_api"
+      - "*/*/op_api"
+      - "*/*/op_kernel/arch35"
+      - "**/*_def.cpp"
+      - "**/*_apt.cpp"
+      - "**/*tiling*data*.h"
+      - "**/*tiling*key*.h"
+      - "*/*/op_host/**/*.h"
+      - "*/*/op_api/**/*.h"
+      - "*/*/op_graph/**/*.h"
+      - "random/drop_out_v3"
+      - "random/stateless_random_uniform_v2"
+      - "random/random_standard_normal_v2"
+      - "common/inc/op_api/aclnn_check.h"
+      - "common/inc/op_api/level2_base.h"
+      - "random/stateless_random_uniform_v3"
+      - "random/stateless_uniform"
+      - "random/stateless_random_normal_v3"
+      - "random/stateless_normal"
+      - "random/stateless_random"
+  llt:
+    ut_check: true
+    st_check: false
+
+math@ops-math:
+  src:
+    release:
+      huawei_style:
+        - ops/ops-math/math/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code: null
+      non_delivery: null
+      open_source: null
+
+HPTG2@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/common/
+        - ops/ops-math/scripts/
+        - ops/ops-math/cmake/
+        - ops/ops-math/classify_rule.yaml
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/example/
+        - ops/ops-math/example/add_example_aicpu/examples
+        - ops/ops-math/example/add_example_aicpu/tests
+        - ops/ops-math/example/add_example/examples
+        - ops/ops-math/example/add_example/tests
+        - ops/ops-math/tests/
+        - ops/ops-math/build.sh
+        - ops/ops-math/CMakeLists.txt
+        - ops/ops-math/common/inc/op_api/aclnn_check.h
+        - ops/ops-math/common/inc/op_api/level2_base.h
+        - ops/ops-math/experimental/math/reduce_mean_with_count/tests/ut/common/tiling_case_executor.cpp
+      non_delivery: null
+      open_source: null
+
+HPTG5@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/histogram_v2/op_host
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code: null
+      non_delivery: null
+      open_source: null
+
+HPTG3@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/math/adjacent_difference/CMakeLists.txt
+        - ops/ops-math/math/adjacent_difference/op_api/adjacent_difference.cpp
+        - ops/ops-math/math/adjacent_difference/op_api/adjacent_difference.h
+        - ops/ops-math/math/adjacent_difference/op_graph/adjacent_difference_graph_infer.cpp
+        - ops/ops-math/math/adjacent_difference/op_graph/adjacent_difference_proto.h
+        - ops/ops-math/math/adjacent_difference/op_graph/fusion_pass/.gitkeep
+        - ops/ops-math/math/adjacent_difference/op_host/arch35/
+        - ops/ops-math/math/adjacent_difference/op_host/config/ascend950/
+        - ops/ops-math/math/adjacent_difference/op_host/op_api/adjacent_difference.h
+        - ops/ops-math/math/adjacent_difference/op_host/adjacent_difference_def.cpp
+        - ops/ops-math/math/adjacent_difference/op_host/adjacent_difference_infershape.cpp
+        - ops/ops-math/math/adjacent_difference/op_kernel/arch35/
+        - ops/ops-math/math/adjacent_difference/op_kernel/adjacent_difference_apt.cpp
+        - ops/ops-math/math/adjacent_difference/README.md
+        - ops/ops-math/math/bincount/op_host/arch35/
+        - ops/ops-math/math/bincount/op_host/config/ascend950/
+        - ops/ops-math/math/bincount/op_kernel/arch35/
+        - ops/ops-math/math/bincount/op_kernel/bincount.cpp
+        - ops/ops-math/conversion/clip_by_value/CMakeLists.txt
+        - ops/ops-math/conversion/clip_by_value/op_host/arch35/clip_by_value_single_dim_tiling.cpp
+        - ops/ops-math/conversion/clip_by_value/op_host/arch35/clip_by_value_tiling.cpp
+        - ops/ops-math/conversion/clip_by_value/op_host/arch35/clip_by_value_ub_broadcast_tiling.cpp
+        - ops/ops-math/conversion/clip_by_value_v2/op_host/arch35/clip_by_value_v2_tiling.cpp
+
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/math/bincount/tests/ut/op_host/arch35/test_bincount_tiling_arch35.cpp
+      non_delivery: null
+      open_source: null
+
+VC1@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/math/add_n/
+        - ops/ops-math/math/assign_add/
+        - ops/ops-math/math/assign_sub/
+        - ops/ops-math/math/cast/
+        - ops/ops-math/math/ceil/
+        - ops/ops-math/math/cos/
+        - ops/ops-math/math/exp/
+        - ops/ops-math/math/floor/
+        - ops/ops-math/math/is_close/
+        - ops/ops-math/math/is_finite/docs/
+        - ops/ops-math/math/is_finite/examples/op_api/
+        - ops/ops-math/math/is_finite/op_graph/
+        - ops/ops-math/math/is_finite/op_host/arch35/
+        - ops/ops-math/math/is_finite/op_host/config/ascend950/
+        - ops/ops-math/math/is_finite/op_host/is_finite_def.cpp
+        - ops/ops-math/math/is_finite/op_host/is_finite_infershape.cpp
+        - ops/ops-math/math/is_finite/op_kernel/arch35/
+        - ops/ops-math/math/is_finite/op_kernel/is_finite_apt.cpp
+        - ops/ops-math/math/is_inf/docs/
+        - ops/ops-math/math/is_inf/framework/
+        - ops/ops-math/math/is_inf/op_graph/
+        - ops/ops-math/math/is_inf/op_host/config/ascend950/
+        - ops/ops-math/math/is_inf/op_host/is_inf_def.cpp
+        - ops/ops-math/math/is_inf/op_host/is_inf_infershape.cpp
+        - ops/ops-math/math/is_inf/op_host/is_inf_tiling_arch35.cpp
+        - ops/ops-math/math/is_inf/op_host/is_inf_tiling_arch35.h
+        - ops/ops-math/math/is_inf/op_kernel/arch35/
+        - ops/ops-math/math/is_inf/op_kernel/is_inf_apt.cpp
+        - ops/ops-math/math/is_nan/
+        - ops/ops-math/math/is_neg_inf/
+        - ops/ops-math/math/is_pos_inf/
+        - ops/ops-math/math/log/
+        - ops/ops-math/math/log1p/
+        - ops/ops-math/math/logical_not/
+        - ops/ops-math/math/masked_scale/
+        - ops/ops-math/math/neg/
+        - ops/ops-math/math/reciprocal/
+        - ops/ops-math/math/round/
+        - ops/ops-math/math/rsqrt/
+        - ops/ops-math/math/rsqrt_grad/
+        - ops/ops-math/math/sign/
+        - ops/ops-math/math/sin/
+        - ops/ops-math/math/sqrt/
+        - ops/ops-math/math/sqrt_grad/
+        - ops/ops-math/math/square/
+        - ops/ops-math/math/tanh/
+        - ops/ops-math/math/trunc/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/math/add_n/examples/
+        - ops/ops-math/math/add_n/tests/
+        - ops/ops-math/math/assign_add/examples/
+        - ops/ops-math/math/assign_add/tests/
+        - ops/ops-math/math/assign_sub/examples/
+        - ops/ops-math/math/assign_sub/tests/
+        - ops/ops-math/math/cast/examples/
+        - ops/ops-math/math/cast/tests/
+        - ops/ops-math/math/ceil/examples/
+        - ops/ops-math/math/ceil/tests/
+        - ops/ops-math/math/cos/examples/
+        - ops/ops-math/math/cos/tests/
+        - ops/ops-math/math/exp/examples/
+        - ops/ops-math/math/exp/tests/
+        - ops/ops-math/math/floor/examples/
+        - ops/ops-math/math/floor/tests/
+        - ops/ops-math/math/is_close/examples/
+        - ops/ops-math/math/is_close/tests/
+        - ops/ops-math/math/is_finite/examples/
+        - ops/ops-math/math/is_finite/tests/
+        - ops/ops-math/math/is_nan/examples/
+        - ops/ops-math/math/is_nan/tests/
+        - ops/ops-math/math/is_neg_inf/examples/
+        - ops/ops-math/math/is_neg_inf/tests/
+        - ops/ops-math/math/is_pos_inf/examples/
+        - ops/ops-math/math/is_pos_inf/tests/
+        - ops/ops-math/math/log/examples/
+        - ops/ops-math/math/log/tests/
+        - ops/ops-math/math/log1p/examples/
+        - ops/ops-math/math/log1p/tests/
+        - ops/ops-math/math/logical_not/examples/
+        - ops/ops-math/math/logical_not/tests/
+        - ops/ops-math/math/masked_scale/examples/
+        - ops/ops-math/math/masked_scale/tests/
+        - ops/ops-math/math/neg/examples
+        - ops/ops-math/math/neg/tests
+        - ops/ops-math/math/reciprocal/examples/
+        - ops/ops-math/math/reciprocal/tests/
+        - ops/ops-math/math/round/examples/
+        - ops/ops-math/math/round/tests/
+        - ops/ops-math/math/rsqrt/examples/
+        - ops/ops-math/math/rsqrt/tests/
+        - ops/ops-math/math/rsqrt_grad/examples/
+        - ops/ops-math/math/rsqrt_grad/tests/
+        - ops/ops-math/math/sign/examples/
+        - ops/ops-math/math/sign/tests/
+        - ops/ops-math/math/sin/examples/
+        - ops/ops-math/math/sin/tests/
+        - ops/ops-math/math/sqrt/examples/
+        - ops/ops-math/math/sqrt/tests/
+        - ops/ops-math/math/sqrt_grad/examples/
+        - ops/ops-math/math/sqrt_grad/tests/
+        - ops/ops-math/math/square/examples/
+        - ops/ops-math/math/square/tests/
+        - ops/ops-math/math/tanh/examples/
+        - ops/ops-math/math/tanh/tests/
+        - ops/ops-math/math/trunc/examples/
+        - ops/ops-math/math/trunc/tests/
+      non_delivery: null
+      open_source: null
+
+sort@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/math/sort/
+        - ops/ops-math/math/sort_with_index/
+        - ops/ops-math/math/top_k_v2/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/math/sort/examples/
+        - ops/ops-math/math/sort/tests/
+        - ops/ops-math/math/sort_with_index/examples/
+        - ops/ops-math/math/sort_with_index/tests/
+        - ops/ops-math/math/top_k_v2/examples/
+        - ops/ops-math/math/top_k_v2/tests/
+      non_delivery: null
+      open_source: null
+
+VC2@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/conversion/as_strided/
+        - ops/ops-math/conversion/batch_to_space_nd/op_graph/
+        - ops/ops-math/conversion/batch_to_space_nd/op_host/
+        - ops/ops-math/conversion/batch_to_space_nd/op_kernel/
+        - ops/ops-math/conversion/broadcast_to/op_host/
+        - ops/ops-math/conversion/broadcast_to/op_kernel/
+        - ops/ops-math/conversion/circular_pad_grad/
+        - ops/ops-math/conversion/circular_pad/
+        - ops/ops-math/conversion/depth_to_space/
+        - ops/ops-math/conversion/dynamic_partition/
+        - ops/ops-math/conversion/fill/
+        - ops/ops-math/conversion/fills/
+        - ops/ops-math/conversion/im2col/
+        - ops/ops-math/conversion/masked_fill/
+        - ops/ops-math/conversion/masked_select_v3/
+        - ops/ops-math/conversion/matrix_diag/
+        - ops/ops-math/conversion/matrix_set_diag/op_graph/
+        - ops/ops-math/conversion/matrix_set_diag/op_host/
+        - ops/ops-math/conversion/matrix_set_diag/op_kernel/
+        - ops/ops-math/conversion/mem_set_v2/
+        - ops/ops-math/conversion/mem_set/
+        - ops/ops-math/conversion/mirror_pad/
+        - ops/ops-math/conversion/pad_v2/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/
+        - ops/ops-math/conversion/pad_v3_grad_replication/
+        - ops/ops-math/conversion/pad_v3_grad/
+        - ops/ops-math/conversion/pad_v3/
+        - ops/ops-math/conversion/pad/
+        - ops/ops-math/conversion/reflection_pad3d_grad/
+        - ops/ops-math/conversion/roll/
+        - ops/ops-math/conversion/slice/
+        - ops/ops-math/conversion/space_to_depth/
+        - ops/ops-math/conversion/split_v/op_graph/
+        - ops/ops-math/conversion/split_v/op_host/
+        - ops/ops-math/conversion/split_v/op_kernel/
+        - ops/ops-math/conversion/split/
+        - ops/ops-math/conversion/strided_slice_v2/op_host/
+        - ops/ops-math/conversion/strided_slice_v2/op_kernel/
+        - ops/ops-math/conversion/strided_slice_v3/op_host/
+        - ops/ops-math/conversion/strided_slice_v3/op_kernel/
+        - ops/ops-math/conversion/strided_slice/op_graph/
+        - ops/ops-math/conversion/strided_slice/op_host/
+        - ops/ops-math/conversion/strided_slice/op_kernel/
+        - ops/ops-math/conversion/trans_data/op_host/
+        - ops/ops-math/conversion/trans_data/op_kernel/
+        - ops/ops-math/conversion/transpose_v2/
+        - ops/ops-math/conversion/transpose/
+        - ops/ops-math/conversion/unpack/op_graph/
+        - ops/ops-math/conversion/unpack/op_host/
+        - ops/ops-math/conversion/unpack/op_kernel/
+        - ops/ops-math/conversion/zeros_like/
+        - ops/ops-math/math/addr/
+        - ops/ops-math/math/arg_max_v2/
+        - ops/ops-math/math/arg_max_with_value/
+        - ops/ops-math/math/arg_min_with_value/
+        - ops/ops-math/math/arg_min/
+        - ops/ops-math/math/bias_add_grad/
+        - ops/ops-math/math/cdist/
+        - ops/ops-math/math/cumsum/
+        - ops/ops-math/math/diag_part/
+        - ops/ops-math/math/dot/
+        - ops/ops-math/math/grouped_bias_add_grad/
+        - ops/ops-math/math/invert/
+        - ops/ops-math/math/ones_like/
+        - ops/ops-math/math/reduce_log_sum_exp/
+        - ops/ops-math/math/reduce_mean/op_host/
+        - ops/ops-math/math/reduce_std_v2_update/
+        - ops/ops-math/math/reduce_std_v2/
+        - ops/ops-math/math/reduce_std_with_mean/
+        - ops/ops-math/math/reduce_var/
+        - ops/ops-math/math/square_sum_v1/
+        - ops/ops-math/math/zero_op/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/conversion/as_strided/examples/
+        - ops/ops-math/conversion/as_strided/tests/
+        - ops/ops-math/conversion/batch_to_space_nd/examples/
+        - ops/ops-math/conversion/batch_to_space_nd/tests/
+        - ops/ops-math/conversion/broadcast_to/examples/*.cpp
+        - ops/ops-math/conversion/broadcast_to/tests/**/*.cpp
+        - ops/ops-math/conversion/circular_pad_grad/examples/*.cpp
+        - ops/ops-math/conversion/circular_pad_grad/tests/**/*.cpp
+        - ops/ops-math/conversion/circular_pad/examples/*.cpp
+        - ops/ops-math/conversion/circular_pad/tests/**/*.cpp
+        - ops/ops-math/conversion/depth_to_space/examples/*.cpp
+        - ops/ops-math/conversion/depth_to_space/tests/**/*.cpp
+        - ops/ops-math/conversion/dynamic_partition/examples/
+        - ops/ops-math/conversion/dynamic_partition/tests/
+        - ops/ops-math/conversion/fill/examples/
+        - ops/ops-math/conversion/fill/tests/
+        - ops/ops-math/conversion/fills/examples/
+        - ops/ops-math/conversion/fills/tests/
+        - ops/ops-math/conversion/im2col/examples/*.cpp
+        - ops/ops-math/conversion/im2col/tests/**/*.cpp
+        - ops/ops-math/conversion/masked_fill/examples/
+        - ops/ops-math/conversion/masked_fill/tests/
+        - ops/ops-math/conversion/masked_select_v3/examples/
+        - ops/ops-math/conversion/masked_select_v3/tests/
+        - ops/ops-math/conversion/matrix_diag/examples/
+        - ops/ops-math/conversion/matrix_diag/tests/
+        - ops/ops-math/conversion/matrix_set_diag/examples/
+        - ops/ops-math/conversion/matrix_set_diag/tests/
+        - ops/ops-math/conversion/mem_set_v2/examples/*.cpp
+        - ops/ops-math/conversion/mem_set_v2/tests/**/*.cpp
+        - ops/ops-math/conversion/mem_set/examples/
+        - ops/ops-math/conversion/mem_set/tests/
+        - ops/ops-math/conversion/mirror_pad/examples/
+        - ops/ops-math/conversion/mirror_pad/tests/
+        - ops/ops-math/conversion/pad_v2/examples/
+        - ops/ops-math/conversion/pad_v2/tests/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/examples/*.cpp
+        - ops/ops-math/conversion/pad_v3_grad_replicate/tests/**/*.cpp
+        - ops/ops-math/conversion/pad_v3_grad_replication/examples/*.cpp
+        - ops/ops-math/conversion/pad_v3_grad_replication/tests/**/*.cpp
+        - ops/ops-math/conversion/pad_v3_grad/examples/
+        - ops/ops-math/conversion/pad_v3_grad/tests/
+        - ops/ops-math/conversion/pad_v3/examples/
+        - ops/ops-math/conversion/pad_v3/tests/
+        - ops/ops-math/conversion/pad/examples/
+        - ops/ops-math/conversion/pad/tests/
+        - ops/ops-math/conversion/reflection_pad3d_grad/examples/*.cpp
+        - ops/ops-math/conversion/reflection_pad3d_grad/tests/**/*.cpp
+        - ops/ops-math/conversion/roll/examples/
+        - ops/ops-math/conversion/roll/tests/
+        - ops/ops-math/conversion/slice/examples/
+        - ops/ops-math/conversion/slice/tests/
+        - ops/ops-math/conversion/space_to_depth/examples/
+        - ops/ops-math/conversion/space_to_depth/tests/
+        - ops/ops-math/conversion/split_v/examples/
+        - ops/ops-math/conversion/split_v/tests/
+        - ops/ops-math/conversion/split/examples/
+        - ops/ops-math/conversion/split/tests/
+        - ops/ops-math/conversion/strided_slice_v2/examples/*.cpp
+        - ops/ops-math/conversion/strided_slice_v2/tests/**/*.cpp
+        - ops/ops-math/conversion/strided_slice_v3/examples/*.cpp
+        - ops/ops-math/conversion/strided_slice_v3/tests/**/*.cpp
+        - ops/ops-math/conversion/strided_slice/examples/
+        - ops/ops-math/conversion/strided_slice/tests/
+        - ops/ops-math/conversion/trans_data/examples/*.cpp
+        - ops/ops-math/conversion/trans_data/tests/**/*.cpp
+        - ops/ops-math/conversion/transpose_v2/examples/*.cpp
+        - ops/ops-math/conversion/transpose_v2/tests/**/*.cpp
+        - ops/ops-math/conversion/transpose/examples/
+        - ops/ops-math/conversion/transpose/tests/
+        - ops/ops-math/conversion/unpack/examples/
+        - ops/ops-math/conversion/unpack/tests/
+        - ops/ops-math/conversion/zeros_like/examples/
+        - ops/ops-math/conversion/zeros_like/tests/
+        - ops/ops-math/math/addr/examples/
+        - ops/ops-math/math/addr/tests/
+        - ops/ops-math/math/arg_max_v2/examples/
+        - ops/ops-math/math/arg_max_v2/tests/
+        - ops/ops-math/math/arg_max_with_value/examples/
+        - ops/ops-math/math/arg_max_with_value/tests/
+        - ops/ops-math/math/arg_min_with_value/examples/
+        - ops/ops-math/math/arg_min_with_value/tests/
+        - ops/ops-math/math/arg_min/examples/
+        - ops/ops-math/math/arg_min/tests/
+        - ops/ops-math/math/bias_add_grad/examples/
+        - ops/ops-math/math/bias_add_grad/tests/
+        - ops/ops-math/math/cdist/examples/
+        - ops/ops-math/math/cdist/tests/
+        - ops/ops-math/math/cumsum/examples/
+        - ops/ops-math/math/cumsum/tests/
+        - ops/ops-math/math/diag_part/examples/
+        - ops/ops-math/math/diag_part/tests/
+        - ops/ops-math/math/dot/examples/
+        - ops/ops-math/math/dot/tests/
+        - ops/ops-math/math/grouped_bias_add_grad/examples/
+        - ops/ops-math/math/grouped_bias_add_grad/tests/
+        - ops/ops-math/math/invert/examples/
+        - ops/ops-math/math/invert/tests/
+        - ops/ops-math/math/ones_like/examples/
+        - ops/ops-math/math/ones_like/tests/
+        - ops/ops-math/math/reduce_log_sum_exp/examples/
+        - ops/ops-math/math/reduce_log_sum_exp/tests/
+        - ops/ops-math/math/reduce_mean/examples/
+        - ops/ops-math/math/reduce_mean/tests/
+        - ops/ops-math/math/reduce_std_v2_update/examples/
+        - ops/ops-math/math/reduce_std_v2_update/tests/
+        - ops/ops-math/math/reduce_std_v2/examples/
+        - ops/ops-math/math/reduce_std_v2/tests/
+        - ops/ops-math/math/reduce_std_with_mean/examples/
+        - ops/ops-math/math/reduce_std_with_mean/tests/
+        - ops/ops-math/math/reduce_var/examples/
+        - ops/ops-math/math/reduce_var/tests/
+        - ops/ops-math/math/square_sum_v1/examples/
+        - ops/ops-math/math/square_sum_v1/tests/
+        - ops/ops-math/math/zero_op/examples/
+        - ops/ops-math/math/zero_op/tests/
+      non_delivery: null
+      open_source: null
+
+VC3@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/math/abs/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/math/abs/examples/
+        - ops/ops-math/math/abs/tests/
+      non_delivery: null
+      open_source: null
+
+VC6@ops-math:
+  src:
+    release:
+      style:
+        # stateless_bernoulli
+        - ops/ops-math/random/stateless_bernoulli/op_host/
+        - ops/ops-math/random/stateless_bernoulli/op_kernel/
+        - ops/ops-math/random/stateless_bernoulli/op_graph/fusion_pass/
+        # random_uniform_v2
+        - ops/ops-math/random/random_uniform_v2/op_graph/fusion_pass/
+        # random_standard_normal_v2
+        - ops/ops-math/random/random_standard_normal_v2/op_graph/fusion_pass/
+        # drop_out_v3
+        - ops/ops-math/random/drop_out_v3/op_host/
+        - ops/ops-math/random/drop_out_v3/op_kernel/
+        - ops/ops-math/random/drop_out_v3/op_graph/fusion_pass/
+        # drop_out_do_mask
+        - ops/ops-math/random/drop_out_do_mask/op_host/
+        - ops/ops-math/random/drop_out_do_mask/op_kernel/
+        # stateless_drop_out_gen_mask
+        - ops/ops-math/random/stateless_drop_out_gen_mask/op_host/
+        - ops/ops-math/random/stateless_drop_out_gen_mask/op_kernel/
+        # stateless_normal
+        - ops/ops-math/random/stateless_normal/
+        - ops/ops-math/random/stateless_normal/op_host/
+        - ops/ops-math/random/stateless_normal/op_kernel/
+        # stateless_random_normal_v2
+        - ops/ops-math/random/stateless_random_normal_v2/op_host/
+        - ops/ops-math/random/stateless_random_normal_v2/op_kernel/
+        # random_common
+        - ops/ops-math/random/random_common/op_kernel/
+        - ops/ops-math/random/random_common/op_host/
+        # stateless_random_normal_v3
+        - ops/ops-math/random/stateless_random_normal_v3/
+        - ops/ops-math/random/stateless_random_normal_v3/op_host/
+        - ops/ops-math/random/stateless_random_normal_v3/op_kernel/
+        # truncated_normal_v2   
+        - ops/ops-math/random/truncated_normal_v2/op_graph/fusion_pass/
+        - ops/ops-math/random/truncated_normal_v2/op_kernel/
+        - ops/ops-math/random/truncated_normal_v2/op_host/
+        # stateless_random_uniform_v2
+        - ops/ops-math/random/stateless_random_uniform_v2/op_host/
+        - ops/ops-math/random/stateless_random_uniform_v2/op_kernel/
+        # strided_slice_grad
+        - ops/ops-math/conversion/strided_slice_grad/op_host/
+        - ops/ops-math/conversion/strided_slice_grad/op_kernel/
+        # stateless_random_uniform_v3
+        - ops/ops-math/random/stateless_random_uniform_v3/
+        - ops/ops-math/random/stateless_random_uniform_v3/op_host/
+        - ops/ops-math/random/stateless_random_uniform_v3/op_kernel/
+        # stateless_uniform
+        - ops/ops-math/random/stateless_uniform/
+        - ops/ops-math/random/stateless_uniform/op_host/
+        - ops/ops-math/random/stateless_uniform/op_kernel/
+        # stateless_random
+        - ops/ops-math/random/stateless_random/
+        - ops/ops-math/random/stateless_random/op_host/
+        - ops/ops-math/random/stateless_random/op_kernel/
+        # tril
+        - ops/ops-math/conversion/tril/op_host/
+        - ops/ops-math/conversion/tril/op_kernel/
+        # triu
+        - ops/ops-math/conversion/triu/op_host/
+        - ops/ops-math/conversion/triu/op_kernel/
+        - ops/ops-math/conversion/triu/op_graph/fusion_pass/
+        # pack
+        - ops/ops-math/conversion/pack/op_host/
+        - ops/ops-math/conversion/pack/op_kernel/
+        # concat_d
+        - ops/ops-math/conversion/concat_d/CMakeLists.txt
+        - ops/ops-math/conversion/concat_d/op_host/
+        - ops/ops-math/conversion/concat_d/op_kernel/
+        # concat_v2
+        - ops/ops-math/conversion/concat_v2/CMakeLists.txt
+        - ops/ops-math/conversion/concat_v2/op_host/
+        - ops/ops-math/conversion/concat_v2/op_kernel/
+        # concat
+        - ops/ops-math/conversion/concat/CMakeLists.txt
+        - ops/ops-math/conversion/concat/op_host/
+        - ops/ops-math/conversion/concat/op_kernel/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        # stateless_bernoulli
+        - ops/ops-math/random/stateless_bernoulli/examples/
+        - ops/ops-math/random/stateless_bernoulli/tests/
+        # drop_out_v3
+        - ops/ops-math/random/drop_out_v3/examples/
+        - ops/ops-math/random/drop_out_v3/tests/
+        # drop_out_do_mask
+        - ops/ops-math/random/drop_out_do_mask/examples/
+        - ops/ops-math/random/drop_out_do_mask/tests/
+        # stateless_drop_out_gen_mask
+        - ops/ops-math/random/stateless_drop_out_gen_mask/tests/
+        # stateless_random_normal_v2
+        - ops/ops-math/random/stateless_random_normal_v2/examples/
+        - ops/ops-math/random/stateless_random_normal_v2/tests/
+        # stateless_random_normal_v3
+        - ops/ops-math/random/stateless_random_normal_v3/examples/
+        - ops/ops-math/random/stateless_random_normal_v3/tests/
+        # stateless_normal
+        - ops/ops-math/random/stateless_normal/tests/
+        # stateless_random_uniform_v2
+        - ops/ops-math/random/stateless_random_uniform_v2/tests/
+        # tril
+        - ops/ops-math/conversion/tril/examples/
+        - ops/ops-math/conversion/tril/tests/
+        # stateless_random_uniform_v3
+        - ops/ops-math/random/stateless_random_uniform_v3/tests/
+        # stateless_uniform
+        - ops/ops-math/random/stateless_uniform/tests/
+        # stateless_random
+        - ops/ops-math/random/stateless_random/tests/
+        # triu
+        - ops/ops-math/conversion/triu/examples/
+        - ops/ops-math/conversion/triu/tests/
+        # pack
+        - ops/ops-math/conversion/pack/examples/
+        - ops/ops-math/conversion/pack/tests/
+        # concat
+        - ops/ops-math/conversion/concat/tests/
+        # concat_d
+        - ops/ops-math/conversion/concat_d/examples/
+        - ops/ops-math/conversion/concat_d/tests/
+        # concat_v2
+        - ops/ops-math/conversion/concat_v2/examples/
+        - ops/ops-math/conversion/concat_v2/tests/
+      non_delivery: null
+      open_source: null
+
+VC7@ops-math:
+  src:
+    release:
+      style: null
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code: null
+      non_delivery: null
+      open_source: null
+
+VC8@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/conversion/view_copy/op_host/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/conversion/view_copy/examples/
+      non_delivery: null
+      open_source: null
+
+VC5@ops-math:
+  src:
+    release:
+      style:
+        # sinc
+        - ops/ops-math/math/sinc/op_graph/
+        - ops/ops-math/math/sinc/op_host/
+        - ops/ops-math/math/sinc/op_kernel/
+        # truncate_div
+        - ops/ops-math/math/truncate_div/op_graph/
+        - ops/ops-math/math/truncate_div/op_host/
+        - ops/ops-math/math/truncate_div/op_kernel/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        # sinc
+        - ops/ops-math/math/sinc/examples/
+        - ops/ops-math/math/sinc/tests/
+        # truncate_div
+        - ops/ops-math/math/truncate_div/examples/
+        - ops/ops-math/math/truncate_div/tests/
+      non_delivery: null
+      open_source: null
+
+conversion@ops-math:
+  src:
+    release:
+      style:
+        - ops/ops-math/conversion/chunk_cat/
+        - ops/ops-math/conversion/stack_ball_query/README.md
+        - ops/ops-math/conversion/stack_ball_query/op_kernel/
+        - ops/ops-math/conversion/stack_ball_query/op_host/
+        - ops/ops-math/conversion/stack_ball_query/op_graph/
+        - ops/ops-math/conversion/assign/README.md
+        - ops/ops-math/conversion/assign/op_host/assign_infershape.cpp
+        - ops/ops-math/conversion/assign/op_graph/
+        - ops/ops-math/conversion/feeds_repeat/README.md
+        - ops/ops-math/conversion/feeds_repeat/op_kernel/
+        - ops/ops-math/conversion/feeds_repeat/op_host/
+        - ops/ops-math/conversion/feeds_repeat/op_graph/
+        - ops/ops-math/conversion/pack/docs/
+        - ops/ops-math/conversion/pack/op_api/
+        - ops/ops-math/conversion/pack/README.md
+        - ops/ops-math/conversion/pack/op_host/pack_infershape.cpp
+        - ops/ops-math/conversion/pack/op_graph/
+        - ops/ops-math/conversion/strided_slice_grad/README.md
+        - ops/ops-math/conversion/strided_slice_grad/op_graph/
+        - ops/ops-math/conversion/pad_v4_grad/docs/
+        - ops/ops-math/conversion/pad_v4_grad/op_kernel/
+        - ops/ops-math/conversion/pad_v4_grad/op_host/
+        - ops/ops-math/conversion/pad_v4_grad/op_graph/
+        - ops/ops-math/conversion/reshape/framework/
+        - ops/ops-math/conversion/reshape/README.md
+        - ops/ops-math/conversion/reshape/op_host/
+        - ops/ops-math/conversion/squeezev2/README.md
+        - ops/ops-math/conversion/squeezev2/op_host/
+        - ops/ops-math/conversion/squeezev2/op_graph/
+        - ops/ops-math/conversion/fill_diagonal_v2/docs/
+        - ops/ops-math/conversion/fill_diagonal_v2/README.md
+        - ops/ops-math/conversion/fill_diagonal_v2/op_kernel/
+        - ops/ops-math/conversion/fill_diagonal_v2/op_host/
+        - ops/ops-math/conversion/fill_diagonal_v2/op_graph/
+        - ops/ops-math/conversion/concat/README.md
+        - ops/ops-math/conversion/concat/op_graph/
+        - ops/ops-math/conversion/confusion_transpose_d/CMakeLists.txt
+        - ops/ops-math/conversion/confusion_transpose_d/docs/
+        - ops/ops-math/conversion/confusion_transpose_d/op_api/
+        - ops/ops-math/conversion/confusion_transpose_d/README.md
+        - ops/ops-math/conversion/confusion_transpose_d/op_graph/
+        - ops/ops-math/conversion/flatten/docs/
+        - ops/ops-math/conversion/flatten/framework/
+        - ops/ops-math/conversion/flatten/op_kernel/
+        - ops/ops-math/conversion/flatten/op_host/
+        - ops/ops-math/conversion/view_copy/docs/
+        - ops/ops-math/conversion/view_copy/op_api/
+        - ops/ops-math/conversion/view_copy/README.md
+        - ops/ops-math/conversion/view_copy/op_graph/
+        - ops/ops-math/conversion/unfold_grad/docs/
+        - ops/ops-math/conversion/unfold_grad/README.md
+        - ops/ops-math/conversion/unfold_grad/op_kernel/
+        - ops/ops-math/conversion/unfold_grad/op_kernel_aicpu/
+        - ops/ops-math/conversion/unfold_grad/op_host/
+        - ops/ops-math/conversion/unfold_grad/op_graph/
+        - ops/ops-math/conversion/tril/CMakeLists.txt
+        - ops/ops-math/conversion/tril/docs/
+        - ops/ops-math/conversion/tril/op_api/
+        - ops/ops-math/conversion/tril/README.md
+        - ops/ops-math/conversion/tril/op_graph/
+        - ops/ops-math/conversion/npu_format_cast/docs/
+        - ops/ops-math/conversion/npu_format_cast/README.md
+        - ops/ops-math/conversion/npu_format_cast/op_host/
+        - ops/ops-math/conversion/concat_d/docs/
+        - ops/ops-math/conversion/concat_d/op_api/
+        - ops/ops-math/conversion/concat_d/README.md
+        - ops/ops-math/conversion/concat_d/op_host/concat_d_infershape.cpp
+        - ops/ops-math/conversion/concat_d/op_graph/
+        - ops/ops-math/conversion/triu/CMakeLists.txt
+        - ops/ops-math/conversion/triu/docs/
+        - ops/ops-math/conversion/triu/op_api/
+        - ops/ops-math/conversion/triu/README.md
+        - ops/ops-math/conversion/triu/op_graph/
+        - ops/ops-math/conversion/circular_pad/docs/
+        - ops/ops-math/conversion/circular_pad/README.md
+        - ops/ops-math/conversion/circular_pad/op_kernel/
+        - ops/ops-math/conversion/circular_pad/op_host/
+        - ops/ops-math/conversion/circular_pad/op_graph/
+        - ops/ops-math/conversion/contiguous/README.md
+        - ops/ops-math/conversion/contiguous/op_kernel/
+        - ops/ops-math/conversion/contiguous/op_host/
+        - ops/ops-math/conversion/mem_set/CMakeLists.txt
+        - ops/ops-math/conversion/mem_set/op_api/
+        - ops/ops-math/conversion/mem_set/op_graph/
+        - ops/ops-math/conversion/mem_set/op_host/mem_set_def.cpp
+        - ops/ops-math/conversion/pad_v3_grad_replication/docs/
+        - ops/ops-math/conversion/pad_v3_grad_replication/README.md
+        - ops/ops-math/conversion/pad_v3_grad_replication/op_kernel/
+        - ops/ops-math/conversion/pad_v3_grad_replication/op_host/
+        - ops/ops-math/conversion/pad_v3_grad_replication/op_graph/
+        - ops/ops-math/conversion/depth_to_space/CMakeLists.txt
+        - ops/ops-math/conversion/depth_to_space/README.md
+        - ops/ops-math/conversion/depth_to_space/op_graph/
+        - ops/ops-math/conversion/depth_to_space/op_host/depth_to_space_def.cpp
+        - ops/ops-math/conversion/clip_by_value_v2/docs/
+        - ops/ops-math/conversion/clip_by_value_v2/op_api/
+        - ops/ops-math/conversion/clip_by_value_v2/README.md
+        - ops/ops-math/conversion/clip_by_value_v2/op_host/clip_by_value_v2_infershape.cpp
+        - ops/ops-math/conversion/clip_by_value_v2/op_graph/
+        - ops/ops-math/conversion/im2col/docs/
+        - ops/ops-math/conversion/im2col/op_api/
+        - ops/ops-math/conversion/im2col/README.md
+        - ops/ops-math/conversion/im2col/op_host/im2col_infershape.cpp
+        - ops/ops-math/conversion/im2col/op_graph/
+        - ops/ops-math/conversion/clip_by_value/README.md
+        - ops/ops-math/conversion/clip_by_value/op_host/clip_by_value_infershape.cpp
+        - ops/ops-math/conversion/clip_by_value/op_graph/
+        - ops/ops-math/conversion/clip_by_value/op_host/clip_by_value_def.cpp
+        - ops/ops-math/conversion/reflection_pad3d_grad/docs/
+        - ops/ops-math/conversion/reflection_pad3d_grad/op_api/
+        - ops/ops-math/conversion/reflection_pad3d_grad/README.md
+        - ops/ops-math/conversion/reflection_pad3d_grad/op_kernel/
+        - ops/ops-math/conversion/reflection_pad3d_grad/op_host/
+        - ops/ops-math/conversion/reflection_pad3d_grad/op_graph/
+        - ops/ops-math/conversion/squeeze/framework/
+        - ops/ops-math/conversion/squeeze/op_host/
+        - ops/ops-math/conversion/squeeze/op_graph/
+        - ops/ops-math/conversion/invert_permutation/README.md
+        - ops/ops-math/conversion/invert_permutation/op_host/
+        - ops/ops-math/conversion/invert_permutation/op_graph/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/docs/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/op_kernel/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/op_host/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/op_graph/
+        - ops/ops-math/conversion/circular_pad_grad/docs/
+        - ops/ops-math/conversion/circular_pad_grad/op_api/
+        - ops/ops-math/conversion/circular_pad_grad/README.md
+        - ops/ops-math/conversion/circular_pad_grad/op_kernel/
+        - ops/ops-math/conversion/circular_pad_grad/op_host/
+        - ops/ops-math/conversion/circular_pad_grad/op_graph/
+        - ops/ops-math/conversion/broadcast_to/op_api/
+        - ops/ops-math/conversion/broadcast_to/README.md
+        - ops/ops-math/conversion/broadcast_to/op_host/broadcast_to_infershape.cpp
+        - ops/ops-math/conversion/broadcast_to/op_graph/
+        - ops/ops-math/conversion/broadcast_to/CMakeLists.txt
+        - ops/ops-math/conversion/strided_slice_assign_v2/docs/
+        - ops/ops-math/conversion/strided_slice_assign_v2/README.md
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_kernel/
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.cpp
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_def.cpp
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_host/config/ascend910b/
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_tiling.h
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_host/strided_slice_assign_v2_infershape.cpp
+        - ops/ops-math/conversion/strided_slice_assign_v2/op_graph/
+        - ops/ops-math/conversion/unsqueeze/framework/
+        - ops/ops-math/conversion/unsqueeze/README.md
+        - ops/ops-math/conversion/unsqueeze/op_host/
+        - ops/ops-math/conversion/unsqueeze/op_graph/
+        - ops/ops-math/conversion/strided_slice_v2/README.md
+        - ops/ops-math/conversion/strided_slice_v2/op_host/strided_slice_v2_infershape.cpp
+        - ops/ops-math/conversion/strided_slice_v2/op_graph/
+        - ops/ops-math/conversion/strided_slice_v2/op_host/strided_slice_v2_def.cpp
+        - ops/ops-math/conversion/mem_set_v2/CMakeLists.txt
+        - ops/ops-math/conversion/mem_set_v2/op_api/
+        - ops/ops-math/conversion/mem_set_v2/README.md
+        - ops/ops-math/conversion/mem_set_v2/op_graph/
+        - ops/ops-math/conversion/mem_set_v2/op_host/mem_set_v2_def.cpp
+        - ops/ops-math/conversion/unsqueezev3/README.md
+        - ops/ops-math/conversion/unsqueezev3/op_host/
+        - ops/ops-math/conversion/unsqueezev3/op_graph/
+        - ops/ops-math/conversion/transpose_v2/README.md
+        - ops/ops-math/conversion/transpose_v2/op_kernel/
+        - ops/ops-math/conversion/transpose_v2/op_host/
+        - ops/ops-math/conversion/transpose_v2/op_graph/
+        - ops/ops-math/conversion/tensor_move/op_api/
+        - ops/ops-math/conversion/tensor_move/README.md
+        - ops/ops-math/conversion/tensor_move/op_host/tensor_move_infershape.cpp
+        - ops/ops-math/conversion/tensor_move/op_graph/
+        - ops/ops-math/conversion/tensor_move/op_host/tensor_move_def.cpp
+        - ops/ops-math/conversion/concat_dv2/op_kernel/
+        - ops/ops-math/conversion/concat_dv2/op_host/
+        - ops/ops-math/conversion/strided_slice_v3/docs/
+        - ops/ops-math/conversion/strided_slice_v3/op_api/
+        - ops/ops-math/conversion/strided_slice_v3/README.md
+        - ops/ops-math/conversion/strided_slice_v3/op_host/strided_slice_v3_infershape.cpp
+        - ops/ops-math/conversion/strided_slice_v3/op_graph/
+        - ops/ops-math/conversion/strided_slice_v3/op_host/strided_slice_v3_def.cpp
+        - ops/ops-math/conversion/coalesce_sparse/README.md
+        - ops/ops-math/conversion/coalesce_sparse/op_kernel/
+        - ops/ops-math/conversion/coalesce_sparse/op_host/coalesce_sparse_tiling.cpp
+        - ops/ops-math/conversion/coalesce_sparse/op_host/coalesce_sparse_def.cpp
+        - ops/ops-math/conversion/coalesce_sparse/op_host/config/ascend910b/
+        - ops/ops-math/conversion/coalesce_sparse/op_host/coalesce_sparse_tiling.h
+        - ops/ops-math/conversion/coalesce_sparse/op_host/coalesce_sparse_infershape.cpp
+        - ops/ops-math/conversion/coalesce_sparse/op_graph/
+        - ops/ops-math/conversion/space_to_depth/CMakeLists.txt
+        - ops/ops-math/conversion/space_to_depth/README.md
+        - ops/ops-math/conversion/space_to_depth/op_graph/
+        - ops/ops-math/conversion/space_to_depth/op_host/space_to_depth_def.cpp
+        - ops/ops-math/conversion/trans_data/docs/
+        - ops/ops-math/conversion/trans_data/op_api/
+        - ops/ops-math/conversion/trans_data/README.md
+        - ops/ops-math/conversion/trans_data/op_graph/
+        - ops/ops-math/conversion/diag_flat/docs/
+        - ops/ops-math/conversion/diag_flat/README.md
+        - ops/ops-math/conversion/diag_flat/op_kernel/
+        - ops/ops-math/conversion/diag_flat/op_host/
+        - ops/ops-math/conversion/diag_flat/op_host/op_api/
+        - ops/ops-math/conversion/diag_flat/op_host/config/ascend910b/
+        - ops/ops-math/conversion/diag_flat/op_host/diag_flat_infershape.cpp
+        - ops/ops-math/conversion/diag_flat/op_host/diag_flat_def.cpp
+        - ops/ops-math/conversion/diag_flat/op_host/diag_flat_tiling.cpp
+        - ops/ops-math/conversion/diag_flat/op_graph/
+        - ops/ops-math/conversion/weight_quant_preprocess/docs/
+        - ops/ops-math/conversion/weight_quant_preprocess/op_host/
+        - ops/ops-math/conversion/weight_quant_preprocess/README.md
+        - ops/ops-math/conversion/weight_quant_preprocess/CMakeLists.txt
+        - ops/ops-math/math/tile/op_api/
+        - ops/ops-math/math/tile/docs/
+        - ops/ops-math/math/tile/op_graph/
+        - ops/ops-math/math/tile/op_host/tile_infershape.cpp
+        - ops/ops-math/math/tile/README.md
+        - ops/ops-math/random/dsa_random_uniform/docs/
+        - ops/ops-math/random/dsa_random_uniform/README.md
+        - ops/ops-math/random/dsa_random_uniform/op_host/
+        - ops/ops-math/random/sim_thread_exponential/docs/
+        - ops/ops-math/random/sim_thread_exponential/op_kernel/
+        - ops/ops-math/random/sim_thread_exponential/op_host/
+        - ops/ops-math/random/sim_thread_exponential/op_graph/
+        - ops/ops-math/random/stateless_random_normal_v2/docs/
+        - ops/ops-math/random/stateless_random_normal_v2/op_api/
+        - ops/ops-math/random/stateless_random_normal_v2/README.md
+        - ops/ops-math/random/stateless_random_normal_v2/op_graph/
+        - ops/ops-math/random/stateless_random_normal_v3/docs/
+        - ops/ops-math/random/stateless_random_normal_v3/op_api/
+        - ops/ops-math/random/stateless_random_normal_v3/README.md
+        - ops/ops-math/random/stateless_random_normal_v3/op_graph/
+        - ops/ops-math/random/stateless_normal/op_api/
+        - ops/ops-math/random/stateless_normal/README.md
+        - ops/ops-math/random/stateless_normal/op_graph/
+        - ops/ops-math/random/drop_out_v3/docs/
+        - ops/ops-math/random/drop_out_v3/op_api/
+        - ops/ops-math/random/drop_out_v3/op_graph/
+        - ops/ops-math/random/stateless_random_uniform_v2/op_api/
+        - ops/ops-math/random/stateless_random_uniform_v2/README.md
+        - ops/ops-math/random/stateless_random_uniform_v2/op_graph/
+        - ops/ops-math/random/stateless_random_uniform_v3/op_api/
+        - ops/ops-math/random/stateless_random_uniform_v3/README.md
+        - ops/ops-math/random/stateless_uniform/op_api/
+        - ops/ops-math/random/stateless_uniform/op_graph/
+        - ops/ops-math/random/stateless_uniform/README.md
+        - ops/ops-math/random/stateless_random/op_api/
+        - ops/ops-math/random/stateless_random/op_graph/
+        - ops/ops-math/random/stateless_random/README.md
+        - ops/ops-math/random/stateless_randperm/docs/
+        - ops/ops-math/random/stateless_randperm/op_api/
+        - ops/ops-math/random/stateless_randperm/op_host/stateless_randperm_tiling_for_sort.h
+        - ops/ops-math/random/stateless_randperm/op_host/stateless_randperm_infershape.cpp
+        - ops/ops-math/random/stateless_randperm/op_host/stateless_randperm_tiling_for_sort.cpp
+        - ops/ops-math/random/dsa_random_normal/docs/
+        - ops/ops-math/random/dsa_random_normal/README.md
+        - ops/ops-math/random/dsa_random_normal/op_host/
+        - ops/ops-math/random/drop_out_do_mask/docs/
+        - ops/ops-math/random/drop_out_do_mask/op_api/
+        - ops/ops-math/random/drop_out_do_mask/README.md
+        - ops/ops-math/random/drop_out_do_mask/op_graph/
+        - ops/ops-math/random/stateless_drop_out_gen_mask/op_api/
+        - ops/ops-math/random/stateless_drop_out_gen_mask/README.md
+        - ops/ops-math/random/stateless_drop_out_gen_mask/op_graph/
+        - ops/ops-math/random/drop_out_do_mask_v3/README.md
+        - ops/ops-math/random/drop_out_do_mask_v3/op_host/drop_out_do_mask_v3_infershape.cpp
+        - ops/ops-math/random/drop_out_do_mask_v3/op_graph/
+        - ops/ops-math/random/drop_out_do_mask_v3_d/README.md
+        - ops/ops-math/random/drop_out_do_mask_v3_d/op_kernel/
+        - ops/ops-math/random/drop_out_do_mask_v3_d/op_host/drop_out_do_mask_v3_d_infershape.cpp
+        - ops/ops-math/random/drop_out_do_mask_v3_d/op_graph/
+        - ops/ops-math/random/dsa_gen_bit_mask/docs/
+        - ops/ops-math/random/dsa_gen_bit_mask/README.md
+        - ops/ops-math/random/dsa_gen_bit_mask/op_host/
+        - ops/ops-math/random/stateless_bernoulli/docs/
+        - ops/ops-math/random/stateless_bernoulli/op_api/
+        - ops/ops-math/random/stateless_bernoulli/README.md
+        - ops/ops-math/random/stateless_bernoulli/op_graph/
+        - ops/ops-math/conversion/identity/
+        - ops/ops-math/conversion/identity_n/
+        - ops/ops-math/conversion/rank/
+        - ops/ops-math/conversion/shape/
+        - ops/ops-math/conversion/shape_n/
+      opensource_style: null
+      kernel_style: null
+    unrelease:
+      test_code:
+        - ops/ops-math/conversion/chunk_cat/examples/
+        - ops/ops-math/conversion/chunk_cat/tests/
+        - ops/ops-math/conversion/stack_ball_query/examples/
+        - ops/ops-math/conversion/stack_ball_query/tests/
+        - ops/ops-math/conversion/assign/examples/
+        - ops/ops-math/conversion/assign/tests/
+        - ops/ops-math/conversion/feeds_repeat/examples/
+        - ops/ops-math/conversion/feeds_repeat/tests/
+        - ops/ops-math/conversion/strided_slice_grad/examples/
+        - ops/ops-math/conversion/strided_slice_grad/tests/
+        - ops/ops-math/conversion/pad_v4_grad/examples/
+        - ops/ops-math/conversion/pad_v4_grad/tests/
+        - ops/ops-math/conversion/squeezev2/examples/
+        - ops/ops-math/conversion/squeezev2/tests/
+        - ops/ops-math/conversion/fill_diagonal_v2/examples/
+        - ops/ops-math/conversion/fill_diagonal_v2/tests/
+        - ops/ops-math/conversion/concat/examples/
+        - ops/ops-math/conversion/confusion_transpose_d/examples/
+        - ops/ops-math/conversion/confusion_transpose_d/tests/
+        - ops/ops-math/conversion/flatten/examples/
+        - ops/ops-math/conversion/flatten/tests/
+        - ops/ops-math/conversion/view_copy/tests/
+        - ops/ops-math/conversion/unfold_grad/examples/
+        - ops/ops-math/conversion/unfold_grad/tests/
+        - ops/ops-math/conversion/npu_format_cast/tests/
+        - ops/ops-math/conversion/circular_pad/examples/
+        - ops/ops-math/conversion/circular_pad/tests/
+        - ops/ops-math/conversion/contiguous/tests/
+        - ops/ops-math/conversion/pad_v3_grad_replication/examples/
+        - ops/ops-math/conversion/pad_v3_grad_replication/tests/
+        - ops/ops-math/conversion/depth_to_space/examples/
+        - ops/ops-math/conversion/depth_to_space/tests/
+        - ops/ops-math/conversion/clip_by_value_v2/examples/
+        - ops/ops-math/conversion/clip_by_value_v2/tests/
+        - ops/ops-math/conversion/im2col/examples/
+        - ops/ops-math/conversion/im2col/tests/
+        - ops/ops-math/conversion/clip_by_value/examples/
+        - ops/ops-math/conversion/clip_by_value/tests/
+        - ops/ops-math/conversion/reflection_pad3d_grad/examples/
+        - ops/ops-math/conversion/reflection_pad3d_grad/tests/
+        - ops/ops-math/conversion/squeeze/examples/
+        - ops/ops-math/conversion/squeeze/tests/
+        - ops/ops-math/conversion/invert_permutation/examples/
+        - ops/ops-math/conversion/invert_permutation/tests/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/examples/
+        - ops/ops-math/conversion/pad_v3_grad_replicate/tests/
+        - ops/ops-math/conversion/circular_pad_grad/examples/
+        - ops/ops-math/conversion/circular_pad_grad/tests/
+        - ops/ops-math/conversion/broadcast_to/examples/
+        - ops/ops-math/conversion/broadcast_to/tests/
+        - ops/ops-math/conversion/strided_slice_assign_v2/examples/
+        - ops/ops-math/conversion/strided_slice_assign_v2/tests/
+        - ops/ops-math/conversion/unsqueeze/examples/
+        - ops/ops-math/conversion/unsqueeze/tests/
+        - ops/ops-math/conversion/strided_slice_v2/CMakeLists.txt
+        - ops/ops-math/conversion/strided_slice_v2/examples/
+        - ops/ops-math/conversion/strided_slice_v2/tests/
+        - ops/ops-math/conversion/mem_set_v2/examples/
+        - ops/ops-math/conversion/mem_set_v2/tests/
+        - ops/ops-math/conversion/unsqueezev3/examples/
+        - ops/ops-math/conversion/unsqueezev3/tests/
+        - ops/ops-math/conversion/transpose_v2/examples/
+        - ops/ops-math/conversion/transpose_v2/tests/
+        - ops/ops-math/conversion/tensor_move/CMakeLists.txt
+        - ops/ops-math/conversion/tensor_move/examples/
+        - ops/ops-math/conversion/tensor_move/tests/
+        - ops/ops-math/conversion/concat_dv2/tests/
+        - ops/ops-math/conversion/strided_slice_v3/CMakeLists.txt
+        - ops/ops-math/conversion/strided_slice_v3/examples/
+        - ops/ops-math/conversion/strided_slice_v3/tests/
+        - ops/ops-math/conversion/coalesce_sparse/examples/
+        - ops/ops-math/conversion/coalesce_sparse/tests/
+        - ops/ops-math/conversion/trans_data/examples/
+        - ops/ops-math/conversion/trans_data/tests/
+        - ops/ops-math/conversion/diag_flat/examples/
+        - ops/ops-math/conversion/diag_flat/tests/
+        - ops/ops-math/conversion/weight_quant_preprocess/tests/
+        - ops/ops-math/math/tile/examples/
+        - ops/ops-math/math/tile/tests/
+        - ops/ops-math/random/dsa_random_uniform/examples/
+        - ops/ops-math/random/dsa_random_uniform/tests/
+        - ops/ops-math/random/sim_thread_exponential/examples/
+        - ops/ops-math/random/sim_thread_exponential/tests/
+        - ops/ops-math/random/stateless_random_uniform_v2/examples/
+        - ops/ops-math/random/stateless_random_uniform_v3/examples/
+        - ops/ops-math/random/stateless_uniform/examples/
+        - ops/ops-math/random/stateless_random/examples/
+        - ops/ops-math/random/stateless_normal/examples/
+        - ops/ops-math/random/stateless_randperm/examples/
+        - ops/ops-math/random/stateless_randperm/tests/
+        - ops/ops-math/random/dsa_random_normal/examples/
+        - ops/ops-math/random/dsa_random_normal/tests/
+        - ops/ops-math/random/stateless_drop_out_gen_mask/examples/
+        - ops/ops-math/random/drop_out_do_mask_v3/examples/
+        - ops/ops-math/random/drop_out_do_mask_v3/tests/
+        - ops/ops-math/random/drop_out_do_mask_v3_d/examples/
+        - ops/ops-math/random/drop_out_do_mask_v3_d/tests/
+        - ops/ops-math/random/dsa_gen_bit_mask/examples/
+        - ops/ops-math/random/dsa_gen_bit_mask/tests/
+        - ops/ops-math/conversion/identity_n/examples/
+        - ops/ops-math/conversion/identity_n/tests/
+        - ops/ops-math/conversion/identity/examples/
+        - ops/ops-math/conversion/identity/tests/
+        - ops/ops-math/conversion/rank/examples/
+        - ops/ops-math/conversion/rank/tests/
+        - ops/ops-math/conversion/shape_n/examples/
+        - ops/ops-math/conversion/shape_n/tests/
+        - ops/ops-math/conversion/shape/examples/
+        - ops/ops-math/conversion/shape/tests/
+      non_delivery: null
+      open_source: null

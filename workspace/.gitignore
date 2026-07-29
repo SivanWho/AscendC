@@ -1,0 +1,42 @@
+# Nested utility repositories keep their own Git histories.
+/utils/repos/*/
+
+# Downloaded official archives and extracted historical packages.
+/utils/competitions/S6/
+/utils/competitions/S7/
+/utils/competitions/S8/
+/utils/official-materials/*
+!/utils/official-materials/README.md
+
+# Ascend/CANN build and packaging outputs.
+**/build/
+**/out/
+**/output/
+**/install/
+**/cmake-build-*/
+**/custom_*.run
+**/*.o
+**/*.so
+**/*.log
+
+# Profiling and generated reports.
+**/profiling/
+**/profiler_output/
+**/msprof_*/
+**/trace.json
+**/op_summary_*.csv
+
+# Python/editor noise.
+**/__pycache__/
+**/*.py[cod]
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets and machine-specific settings.
+.env
+.env.*
+!.env.example
+*.key
+*.pem

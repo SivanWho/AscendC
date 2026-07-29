@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optimize AscendC Operators"
+  short_description: "Profile and optimize AscendC competition kernels"
+  default_prompt: "Use $optimize-ascendc-operators to profile and optimize this AscendC operator against its official harness."

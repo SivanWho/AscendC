@@ -1,0 +1,38 @@
+# Local credentials and environment
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.key
+credentials
+
+# Git and editor state nested inside imported snapshots
+**/.git/
+**/.idea/
+**/.vscode/
+
+# Build and Python caches
+**/build/
+**/build_out/
+**/dist/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+*.py[cod]
+*.o
+*.obj
+*.so
+*.dll
+
+# Profiler raw output and transient logs
+**/PROF_*/
+**/mindstudio_profiler_log/
+*.log
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+

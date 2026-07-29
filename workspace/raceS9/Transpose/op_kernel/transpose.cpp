@@ -1,0 +1,59 @@
+#include "kernel_operator.h"
+using namespace AscendC;
+
+template <typename T>
+class KernelTransposeS9 {
+public:
+    __aicore__ inline void Init(GM_ADDR x, GM_ADDR y, const TransposeTilingData &t)
+    {
+        x_.SetGlobalBuffer((__gm__ T *)x);
+        y_.SetGlobalBuffer((__gm__ T *)y);
+        rank_ = t.rank;
+        blocks_ = t.blockDim;
+        total_ = t.outputCount;
+        for (uint32_t i = 0; i < rank_; ++i) {
+            shape_[i] = t.outputShape[i];
+            stride_[i] = t.sourceStrideForOutputDim[i];
+        }
+    }
+
+    __aicore__ inline void Process()
+    {
+        for (uint64_t idx = GetBlockIdx(); idx < total_; idx += blocks_) {
+            uint64_t rem = idx, src = 0;
+            for (int32_t d = rank_ - 1; d >= 0; --d) {
+                uint64_t c = rem % shape_[d];
+                rem /= shape_[d];
+                src += c * stride_[d];
+            }
+            y_.SetValue(idx, x_.GetValue(src));
+        }
+    }
+
+private:
+    GlobalTensor<T> x_, y_;
+    uint64_t shape_[8], stride_[8], total_;
+    uint32_t rank_, blocks_;
+};
+
+template <typename T>
+__aicore__ inline void Run(GM_ADDR x, GM_ADDR y, const TransposeTilingData &t)
+{
+    KernelTransposeS9<T> op;
+    op.Init(x, y, t);
+    op.Process();
+}
+
+extern "C" __global__ __aicore__ void transpose(GM_ADDR x, GM_ADDR y, GM_ADDR workspace, GM_ADDR tiling)
+{
+    GET_TILING_DATA(t, tiling);
+    if (t.dtypeCode == 0) {
+        Run<half>(x, y, t);
+    } else if (t.dtypeCode == 1) {
+        Run<float>(x, y, t);
+    } else if (t.dtypeCode == 2) {
+        Run<int32_t>(x, y, t);
+    } else {
+        Run<int8_t>(x, y, t);
+    }
+}
