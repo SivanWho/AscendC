@@ -46,12 +46,39 @@ descriptor cursor per core and row task so each core scans the list once.
 
 Starting every available vector core can still multiply descriptor traffic.
 For the out-of-line metadata path, cap block dim by a payload-size target while
-leaving the small inline path unchanged. On CANN 8.5 / Ascend 910B4, a 256-input
-synthetic case improved from 56.90 us to 34.23 us median (39.8%) when block dim
-fell from 40 to 8; the nine-input public geometry remained within noise at
-8.68 us versus 8.60 us.
+leaving the small inline path unchanged. This optimization improved a synthetic
+256-input case from 56.90 us to 34.23 us, but the resulting submission
+regressed by about 2 us on the private judge. Treat it as a synthetic diagnostic,
+not a validated S9 submission optimization. Do not infer a hidden case from one
+large public timing component.
 
 Appending a prefix table to raw tiling data was rejected because the available
 tiling buffer could not reliably hold the extra N+1 64-bit entries. Capacity
 failures must be tested at 129 and the ACLNN maximum of 256 inputs before using
 such a scheme.
+
+## TQueBind double buffering for long copy chains
+
+For a pure movement kernel, use
+`TQueBind<VECIN, VECOUT, 2>` with two 64 KiB buffers to let MTE2 for the next
+tile overlap MTE3 for the previous tile. Follow the queue lifecycle
+`Alloc -> MTE2 -> EnQue -> DeQue -> MTE3 -> Free`; do not substitute fixed
+cycle delays.
+
+The benefit depends on the number of tiles processed sequentially by one core.
+On CANN 8.5 / Ascend 910B4, a two-core contiguous dim-0 case with about 9 MiB of
+minimum GM traffic improved from 51.646 us to 31.438 us (39.1%). Per-input
+segments of 128, 256, and 512 KiB improved by 4.1%, 14.4%, and 25.7%,
+respectively. Sixteen KiB buffers lost to queue and DMA command overhead;
+32 KiB reached 37.397 us and 64 KiB reached 31.438 us on the large case.
+
+The nine-input public geometry stayed within noise: three single-buffer medians
+were 8.680, 8.670, and 8.619 us; three double-buffer medians were 8.709, 8.759,
+and 8.619 us. Therefore describe this as a long-tile-chain optimization, not a
+universal Concat speedup.
+
+For correctness, test queue reuse with non-aligned tails, empty tensors, all
+supported dtypes, 16/32/64 KiB boundaries, row counts around the DataCopy block
+count limit, and reproducible random stress cases. Host validation should reject
+mixed dtypes, mismatched non-concat axes, negative runtime extents, and shape
+arithmetic overflow; those checks do not add AI Core time.
