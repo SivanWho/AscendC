@@ -53,18 +53,15 @@ parser.add_argument(
         "many64", "many128",
     ),
 )
-parser.add_argument("--rounds", type=int, default=1)
 args = parser.parse_args()
 
 cpu_inputs, dim = make_case(args.case)
 expected = torch.cat(cpu_inputs, dim=dim)
 npu_inputs = [tensor.npu() for tensor in cpu_inputs]
-actual = None
-for _ in range(args.rounds):
-    actual = custom_ops_lib.custom_op(npu_inputs, dim, list(expected.shape))
+actual = custom_ops_lib.custom_op(npu_inputs, dim, list(expected.shape))
 torch.npu.synchronize()
 torch.testing.assert_close(actual.cpu(), expected, rtol=0, atol=0)
 print(
-    f"PASS case={args.case} rounds={args.rounds} inputs={len(cpu_inputs)} "
+    f"PASS case={args.case} inputs={len(cpu_inputs)} "
     f"shape={tuple(expected.shape)} min_gm_bytes={2 * expected.numel() * expected.element_size()}"
 )
