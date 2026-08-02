@@ -327,6 +327,136 @@ private:
     uint64_t outer_, inner_, outputAxis_;
 };
 
+template <typename T>
+class KernelConcatVirtual2D {
+public:
+    __aicore__ inline void Init(GM_ADDR inputList, GM_ADDR output, const ConcatTilingData &t)
+    {
+        inputList_ = inputList;
+        out_.SetGlobalBuffer((__gm__ T *)output);
+        inputCount_ = t.inputCount;
+        blockDim_ = t.blockDim;
+        outer_ = t.outer;
+        inner_ = t.inner;
+        outputAxis_ = t.outputAxis;
+        virtualTileBytes_ = t.virtualTileBytes;
+        outerPerTile_ = t.outerPerVirtualTile;
+        virtualTileCount_ = t.virtualTileCount;
+        outerTileCount_ = t.outerTileCount;
+        pipe_.InitBuffer(copyBuf_, t.tileBytes);
+    }
+
+    __aicore__ inline void Process(const ConcatTilingData &t)
+    {
+        const uint64_t rowElems = outputAxis_ * inner_;
+        const uint64_t rowBytes = rowElems * sizeof(T);
+        const uint64_t taskCount =
+            static_cast<uint64_t>(outerTileCount_) * virtualTileCount_;
+        ListTensorDesc list((__gm__ void *)inputList_);
+        LocalTensor<T> local = copyBuf_.Get<T>();
+        DataCopyPadExtParams<T> pad{false, 0, 0, static_cast<T>(0)};
+
+        for (uint64_t task = GetBlockIdx(); task < taskCount; task += blockDim_) {
+            const uint64_t outerTileId = task / virtualTileCount_;
+            const uint32_t virtualTileId = static_cast<uint32_t>(
+                task - outerTileId * virtualTileCount_);
+            const uint64_t firstOuter = outerTileId * outerPerTile_;
+            const uint16_t rowCount = static_cast<uint16_t>(
+                (outer_ - firstOuter < outerPerTile_) ?
+                    outer_ - firstOuter : outerPerTile_);
+            const uint64_t virtualBeginBytes =
+                static_cast<uint64_t>(virtualTileId) * virtualTileBytes_;
+            const uint32_t currentTileBytes = static_cast<uint32_t>(
+                (rowBytes - virtualBeginBytes < virtualTileBytes_) ?
+                    rowBytes - virtualBeginBytes : virtualTileBytes_);
+            const uint64_t virtualEndBytes = virtualBeginBytes + currentTileBytes;
+
+            for (uint32_t inputId = 0; inputId < inputCount_; ++inputId) {
+                const uint64_t inputBeginBytes =
+                    t.axisPrefixes[inputId] * inner_ * sizeof(T);
+                const uint64_t inputBytes =
+                    t.axisSizes[inputId] * inner_ * sizeof(T);
+                const uint64_t inputEndBytes = inputBeginBytes + inputBytes;
+                if (inputEndBytes <= virtualBeginBytes) {
+                    continue;
+                }
+                if (inputBeginBytes >= virtualEndBytes) {
+                    break;
+                }
+
+                const uint64_t intersectionBegin =
+                    inputBeginBytes > virtualBeginBytes ? inputBeginBytes : virtualBeginBytes;
+                const uint64_t intersectionEnd =
+                    inputEndBytes < virtualEndBytes ? inputEndBytes : virtualEndBytes;
+                const uint32_t copyBytes = static_cast<uint32_t>(
+                    intersectionEnd - intersectionBegin);
+                if (copyBytes == 0) {
+                    continue;
+                }
+                const uint32_t srcOffsetBytes = static_cast<uint32_t>(
+                    intersectionBegin - inputBeginBytes);
+                const uint32_t dstOffsetBytes = static_cast<uint32_t>(
+                    intersectionBegin - virtualBeginBytes);
+                GlobalTensor<T> src;
+                src.SetGlobalBuffer((__gm__ T *)list.GetDataPtr<__gm__ uint8_t>(inputId));
+                const uint64_t inputRowElems = t.axisSizes[inputId] * inner_;
+                const uint64_t srcBaseElems =
+                    firstOuter * inputRowElems + srcOffsetBytes / sizeof(T);
+                // DataCopyPad uses bytes for a GM-side stride, but 32-byte
+                // data blocks for a UB-side stride.
+                DataCopyExtParams inputParams{
+                    rowCount,
+                    copyBytes,
+                    static_cast<uint32_t>(inputBytes - copyBytes),
+                    (currentTileBytes - copyBytes) / 32,
+                    0};
+                DataCopyPad(
+                    local[dstOffsetBytes / sizeof(T)],
+                    src[srcBaseElems],
+                    inputParams,
+                    pad);
+            }
+
+            SyncInputToOutput();
+            const uint64_t dstBaseElems =
+                firstOuter * rowElems + virtualBeginBytes / sizeof(T);
+            DataCopyExtParams outputParams{
+                rowCount,
+                currentTileBytes,
+                0,
+                static_cast<uint32_t>(rowBytes - currentTileBytes),
+                0};
+            DataCopyPad(out_[dstBaseElems], local, outputParams);
+            SyncOutputToInput();
+        }
+    }
+
+private:
+    __aicore__ inline void SyncInputToOutput()
+    {
+        event_t event =
+            static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE2_MTE3));
+        SetFlag<HardEvent::MTE2_MTE3>(event);
+        WaitFlag<HardEvent::MTE2_MTE3>(event);
+    }
+
+    __aicore__ inline void SyncOutputToInput()
+    {
+        event_t event =
+            static_cast<event_t>(GetTPipePtr()->FetchEventID(HardEvent::MTE3_MTE2));
+        SetFlag<HardEvent::MTE3_MTE2>(event);
+        WaitFlag<HardEvent::MTE3_MTE2>(event);
+    }
+
+    TPipe pipe_;
+    TBuf<TPosition::VECCALC> copyBuf_;
+    GM_ADDR inputList_;
+    GlobalTensor<T> out_;
+    uint32_t inputCount_, blockDim_, virtualTileBytes_, outerPerTile_;
+    uint32_t virtualTileCount_, outerTileCount_;
+    uint64_t outer_, inner_, outputAxis_;
+};
+
 template <typename T, uint32_t Path>
 __aicore__ inline void RunConcat(GM_ADDR inputs, GM_ADDR y, const ConcatTilingData &t)
 {
@@ -336,6 +466,10 @@ __aicore__ inline void RunConcat(GM_ADDR inputs, GM_ADDR y, const ConcatTilingDa
         op.Process(t);
     } else if constexpr (Path == 2) {
         KernelConcatLongSerial<T> op;
+        op.Init(inputs, y, t);
+        op.Process(t);
+    } else if constexpr (Path == 3) {
+        KernelConcatVirtual2D<T> op;
         op.Init(inputs, y, t);
         op.Process(t);
     } else {
@@ -371,6 +505,8 @@ extern "C" __global__ __aicore__ void concat(
         DispatchConcat<1>(inputs, y, tilingData);
     } else if (TILING_KEY_IS(2)) {
         DispatchConcat<2>(inputs, y, tilingData);
+    } else if (TILING_KEY_IS(3)) {
+        DispatchConcat<3>(inputs, y, tilingData);
     } else if (TILING_KEY_IS(0)) {
         DispatchConcat<0>(inputs, y, tilingData);
     }

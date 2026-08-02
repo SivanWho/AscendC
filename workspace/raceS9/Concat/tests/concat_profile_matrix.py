@@ -30,6 +30,30 @@ def make_case(name):
             torch.randint(-128, 128, (4, 524289), dtype=torch.int8),
             torch.randint(-128, 128, (5, 524289), dtype=torch.int8),
         ], 0
+    if name == "dim0_many128_8k":
+        return [torch.randn(1, 4096, dtype=torch.float16) for _ in range(128)], 0
+    if name == "dim0_many128_64k":
+        return [torch.randn(1, 32768, dtype=torch.float16) for _ in range(128)], 0
+    if name == "dim0_many128_unaligned":
+        return [torch.randn(1, 4097, dtype=torch.float16) for _ in range(128)], 0
+    if name == "aligned_last_many64":
+        return [torch.randn(1024, 16, dtype=torch.float16) for _ in range(64)], -1
+    if name == "aligned_middle_many64":
+        return [
+            torch.randn(64, 1 + index % 4, 16, dtype=torch.float16)
+            for index in range(64)
+        ], 1
+    if name == "virtual_uneven9":
+        # Nine 32B-aligned inputs whose largest axis is 2048x the smallest.
+        # The full output row is larger than UB, so both outer and virtualAxis
+        # must be tiled.
+        lengths = [16, 32, 64, 128, 256, 512, 2048, 8192, 32768]
+        return [torch.randn(128, length, dtype=torch.float16) for length in lengths], 1
+    if name == "virtual_uneven64":
+        # A different input count and a repeated 512x size range exercise the
+        # prefix mapping without specializing the nine-input geometry.
+        lengths = [16 * (1 << (index % 10)) for index in range(64)]
+        return [torch.randn(64, length, dtype=torch.float16) for length in lengths], 1
     if name == "segment128k":
         return [torch.randn(1, 65536, dtype=torch.float16), torch.randn(1, 65536, dtype=torch.float16)], 0
     if name == "segment256k":
@@ -49,6 +73,9 @@ parser.add_argument(
     choices=(
         "official", "tile16", "tile32", "tile64", "over64",
         "dim0_large", "dim0_unaligned", "dim0_fp32", "dim0_int8",
+        "dim0_many128_8k", "dim0_many128_64k", "dim0_many128_unaligned",
+        "aligned_last_many64", "aligned_middle_many64",
+        "virtual_uneven9", "virtual_uneven64",
         "segment128k", "segment256k", "segment512k",
         "many64", "many128",
     ),

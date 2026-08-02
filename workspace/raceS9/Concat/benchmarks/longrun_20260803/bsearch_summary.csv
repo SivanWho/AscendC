@@ -1,0 +1,3 @@
+label,case,inputs,payload_bytes,samples,block_dim,task_min_us,task_median_us,task_mean_us,task_max_us,d2d_floor_us,warmed_chain_floor_us,actual_over_d2d,actual_over_chain_floor,payload_gbps,d2d_payload_util_pct,aiv_time_us,aiv_total_cycles,estimated_aiv_mhz,scalar_ratio,mte2_ratio,mte3_ratio,icache_miss_rate
+bsearch,virtual_uneven9,9,11268096,290,40,33.661,35.721,35.787,38.041,14.7799,14.7799,2.42,2.42,315.45,41.38,32.8905,2170769.0,1650.0,0.146,0.586,0.304,0.0
+bsearch,virtual_uneven64,64,12601344,290,40,38.161,40.171,40.3058,42.721,16.5287,16.5287,2.43,2.43,313.69,41.15,37.0135,2442890.0,1650.0,0.2915,0.589,0.308,0.0

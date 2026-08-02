@@ -108,6 +108,7 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     uint64_t outputAxis = 0;
     uint64_t maxAxisSize = 0;
     uint64_t nonEmptyInputCount = 0;
+    bool allFlatInputsAligned32 = true;
     for (uint32_t i = 0; i < inputCount; ++i) {
         const auto &cur = context->GetDynamicInputShape(0, i)->GetStorageShape();
         if (cur.GetDimNum() != static_cast<size_t>(rank)) {
@@ -123,6 +124,14 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
             }
         }
         const uint64_t axisSize = static_cast<uint64_t>(cur.GetDim(dim));
+        uint64_t flatInputElems = 0;
+        uint64_t flatInputBytes = 0;
+        if (!CheckedMul(axisSize, inner, flatInputElems) ||
+            !CheckedMul(flatInputElems, DtypeBytes(dtype), flatInputBytes)) {
+            return ge::GRAPH_FAILED;
+        }
+        allFlatInputsAligned32 =
+            allFlatInputsAligned32 && (flatInputBytes % 32 == 0);
         if (i < CONCAT_MAX_INPUTS) {
             prefixes[i] = outputAxis;
             axisSizes[i] = axisSize;
@@ -205,9 +214,52 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
             longTaskCount += inputTileTasks;
         }
     }
+    uint64_t outputRowElems = 0;
+    uint64_t outputRowBytes = 0;
+    if (!CheckedMul(outputAxis, inner, outputRowElems) ||
+        !CheckedMul(outputRowElems, elemBytes, outputRowBytes)) {
+        return ge::GRAPH_FAILED;
+    }
+
+    // Virtual-axis 2-D grid.  Each task owns several outer rows and one
+    // virtual-axis byte interval.  Direct MTE2 placement into a row-major UB
+    // tile is only safe when every physical segment starts on a 32-byte
+    // boundary.  Keep all other geometries on the proven input-centric path.
+    constexpr uint64_t VIRTUAL_TILE_TARGET_BYTES = 32 * 1024;
+    const uint32_t virtualTileBytes = static_cast<uint32_t>(std::min<uint64_t>(
+        VIRTUAL_TILE_TARGET_BYTES, std::max<uint64_t>(32, outputRowBytes)));
+    const uint32_t outerPerVirtualTile = static_cast<uint32_t>(std::min<uint64_t>(
+        4095, std::max<uint64_t>(1, tileBytes / virtualTileBytes)));
+    const uint64_t virtualTileCount64 =
+        outputRowBytes == 0 ? 0 : CeilDiv(outputRowBytes, virtualTileBytes);
+    const uint64_t outerTileCount64 =
+        outer == 0 ? 0 : CeilDiv(outer, outerPerVirtualTile);
+    uint64_t virtualTaskCount = 0;
+    if (virtualTileCount64 > UINT32_MAX || outerTileCount64 > UINT32_MAX ||
+        !CheckedMul(virtualTileCount64, outerTileCount64, virtualTaskCount)) {
+        return ge::GRAPH_FAILED;
+    }
+    const bool useLargeRowVirtual2D =
+        outputRowBytes > tileBytes &&
+        smallTaskCount >= static_cast<uint64_t>(availableCores) * 4 &&
+        virtualTaskCount >= availableCores;
+    // A whole output row can also be the virtual tile.  This path targets
+    // many aligned narrow inputs whose old per-input MTE3 writes are highly
+    // strided.  Keep a payload floor and at least half-machine parallelism so
+    // small control-bound cases remain on the stable input-centric path.
+    const bool useWholeRowVirtual2D =
+        inputCount >= 32 && outputRowBytes >= 1024 &&
+        outputRowBytes <= tileBytes && inputBytes >= 1024 * 1024 &&
+        virtualTaskCount >= std::max<uint64_t>(1, availableCores / 2);
+    const bool useVirtual2DPath =
+        inputCount >= 9 && inputCount <= CONCAT_MAX_INPUTS &&
+        allFlatInputsAligned32 && outputRowBytes <= UINT32_MAX &&
+        !hasLongSegments &&
+        (useLargeRowVirtual2D || useWholeRowVirtual2D);
     const uint64_t taskCount = useParallelLongPath ? longTaskCount : smallTaskCount;
-    const uint32_t blockDim =
-        std::max<uint32_t>(1, std::min<uint64_t>(availableCores, taskCount));
+    const uint32_t blockDim = useVirtual2DPath
+        ? std::max<uint32_t>(1, std::min<uint64_t>(availableCores, virtualTaskCount))
+        : std::max<uint32_t>(1, std::min<uint64_t>(availableCores, taskCount));
 
     ConcatTilingData tiling;
     tiling.set_inputCount(inputCount);
@@ -217,6 +269,10 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     tiling.set_rowsPerTask(rowsPerTask);
     tiling.set_rowTaskCount(rowTaskCount);
     tiling.set_axis(static_cast<uint32_t>(dim));
+    tiling.set_virtualTileBytes(virtualTileBytes);
+    tiling.set_outerPerVirtualTile(outerPerVirtualTile);
+    tiling.set_virtualTileCount(static_cast<uint32_t>(virtualTileCount64));
+    tiling.set_outerTileCount(static_cast<uint32_t>(outerTileCount64));
     tiling.set_outer(outer);
     tiling.set_inner(inner);
     tiling.set_outputAxis(outputAxis);
@@ -227,8 +283,10 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     context->SetBlockDim(blockDim);
     // 0: one-shot/small single buffer; 1: under-parallelized long segments
     // split into row-tile tasks; 2: long segments with sufficient natural
-    // task parallelism, retaining per-task double buffering.
-    context->SetTilingKey(useParallelLongPath ? 1 : (hasLongSegments ? 2 : 0));
+    // task parallelism, retaining per-task double buffering; 3: aligned
+    // outer x virtual-axis 2-D tiles.
+    context->SetTilingKey(
+        useVirtual2DPath ? 3 : (useParallelLongPath ? 1 : (hasLongSegments ? 2 : 0)));
     context->GetWorkspaceSizes(1)[0] = 0;
     return ge::GRAPH_SUCCESS;
 }

@@ -1,0 +1,30 @@
+--- a/op_host/concat.cpp
++++ b/op_host/concat.cpp
+@@ -239,12 +239,23 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
+         !CheckedMul(virtualTileCount64, outerTileCount64, virtualTaskCount)) {
+         return ge::GRAPH_FAILED;
+     }
+-    const bool useVirtual2DPath =
+-        inputCount >= 9 && inputCount <= CONCAT_MAX_INPUTS &&
+-        allFlatInputsAligned32 && outputRowBytes > tileBytes &&
+-        outputRowBytes <= UINT32_MAX && !hasLongSegments &&
++    const bool useLargeRowVirtual2D =
++        outputRowBytes > tileBytes &&
+         smallTaskCount >= static_cast<uint64_t>(availableCores) * 4 &&
+         virtualTaskCount >= availableCores;
++    // A whole output row can also be the virtual tile.  This path targets
++    // many aligned narrow inputs whose old per-input MTE3 writes are highly
++    // strided.  Keep a payload floor and at least half-machine parallelism so
++    // small control-bound cases remain on the stable input-centric path.
++    const bool useWholeRowVirtual2D =
++        inputCount >= 32 && outputRowBytes >= 1024 &&
++        outputRowBytes <= tileBytes && inputBytes >= 1024 * 1024 &&
++        virtualTaskCount >= std::max<uint64_t>(1, availableCores / 2);
++    const bool useVirtual2DPath =
++        inputCount >= 9 && inputCount <= CONCAT_MAX_INPUTS &&
++        allFlatInputsAligned32 && outputRowBytes <= UINT32_MAX &&
++        !hasLongSegments &&
++        (useLargeRowVirtual2D || useWholeRowVirtual2D);
+     const uint64_t taskCount = useParallelLongPath ? longTaskCount : smallTaskCount;
+     const uint32_t blockDim = useVirtual2DPath
+         ? std::max<uint32_t>(1, std::min<uint64_t>(availableCores, virtualTaskCount))

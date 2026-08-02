@@ -1,0 +1,38 @@
+--- a/op_kernel/concat.cpp
++++ b/op_kernel/concat.cpp
+@@ -371,7 +371,8 @@ public:
+                     rowBytes - virtualBeginBytes : virtualTileBytes_);
+             const uint64_t virtualEndBytes = virtualBeginBytes + currentTileBytes;
+ 
+-            for (uint32_t inputId = 0; inputId < inputCount_; ++inputId) {
++            const uint32_t firstInput = FindFirstInput(t, virtualBeginBytes);
++            for (uint32_t inputId = firstInput; inputId < inputCount_; ++inputId) {
+                 const uint64_t inputBeginBytes =
+                     t.axisPrefixes[inputId] * inner_ * sizeof(T);
+                 const uint64_t inputBytes =
+@@ -432,6 +433,25 @@ public:
+     }
+ 
+ private:
++    __aicore__ inline uint32_t FindFirstInput(
++        const ConcatTilingData &t, uint64_t virtualBeginBytes) const
++    {
++        uint32_t low = 0;
++        uint32_t high = inputCount_;
++        while (low < high) {
++            const uint32_t middle = low + (high - low) / 2;
++            const uint64_t inputEndBytes =
++                (t.axisPrefixes[middle] + t.axisSizes[middle]) *
++                inner_ * sizeof(T);
++            if (inputEndBytes <= virtualBeginBytes) {
++                low = middle + 1;
++            } else {
++                high = middle;
++            }
++        }
++        return low;
++    }
++
+     __aicore__ inline void SyncInputToOutput()
+     {
+         event_t event =

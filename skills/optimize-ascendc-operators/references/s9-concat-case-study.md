@@ -82,3 +82,41 @@ supported dtypes, 16/32/64 KiB boundaries, row counts around the DataCopy block
 count limit, and reproducible random stress cases. Host validation should reject
 mixed dtypes, mismatched non-concat axes, negative runtime extents, and shape
 arithmetic overflow; those checks do not add AI Core time.
+
+## Whole-row virtual-axis scheduling
+
+For many aligned, small segments, assigning one task per input leaves each core
+with a short DMA chain and repeatedly pays task and descriptor overhead. A better
+mapping treats the concatenated output row as a virtual contiguous axis. A task
+owns one or more complete output rows, walks the input descriptors once, and
+copies every input segment directly into its final output offset. This is a
+scheduling change, not a semantic shortcut: it remains shape-driven and does not
+encode published cases.
+
+Use the whole-row path only when the row fits the DMA/API limits and the geometry
+can amortize its longer per-task command chain. The validated guard used aligned
+segments, 32--128 inputs, output rows from 1 KiB to 64 KiB, at least 1 MiB total
+payload, and enough row tasks to occupy available vector cores. Retain the
+per-input 2-D DMA and over-UB tiled paths as fallbacks.
+
+On CANN 8.5 / Ascend 910B4, the target 64-input aligned-last case improved from
+55.661 us to 13.7505 us (75.30%). Five additional many-input families improved
+by 19.65% to 65.37%, while an out-of-domain negative control changed by -0.30%.
+The final source passed 1000/1000 shape-driven regression cases covering
+43,357,777 bytes and also passed a fresh-install official Case1 smoke test.
+
+The lesson is to optimize the mapping between logical work and hardware tasks
+before tuning event choreography. For each candidate shape, record minimum GM
+traffic, a bandwidth roofline, measured task duration, effective bandwidth,
+D2D/MTE utilization, block count, and active strategy. Large gaps on tiny
+segments usually point to launch/descriptor overhead rather than raw GM
+bandwidth.
+
+## Submission provenance
+
+S9 online scoring is a ZIP upload workflow, not a Git-triggered judge. Git is
+still valuable as the provenance layer: bind every ZIP SHA-256 and run-package
+SHA-256 to a commit, record the CANN/SoC environment and fresh-install tests,
+then upload the package made by the official `zip_op.sh`. The separate GitCode
+requirement on the S9 page applies to open-sourcing award-winning entries and
+merging a PR into the organizer-designated repository.

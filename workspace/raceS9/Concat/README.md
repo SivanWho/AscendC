@@ -8,25 +8,28 @@
 - 公开用例：把 `float16 [128,256]` 沿末轴随机切成最大长度 64 的多段，允许零长度张量，再拼回原张量。
 - 官方扩展连续执行 30 次 `aclnnConcat`，`get_time.py` 取对应算子耗时中位数。
 
-## 当前实现（V4）
+## 当前工作树（V11 实验）
 
-V4 保留 V3 的通用多行二维 DMA，并借鉴 S7 仓库的按数据规模选核经验：Host 以约 16 KiB 输入数据/目标核估算需要的并行批次数，避免小张量为了占满 40 个 AIV 而拆出过多任务。
+V11 从 V9 稳定实现出发，加入 `outer × virtualAxis` 二维 tile 实验路径。每个任务把多个物理输入在若干 outer 行上的交集拼入行式 UB tile，再用一次二维 MTE3 写回。
 
-每个任务处理某个输入的若干 outer 行；片段能放进 UB 时采用二维 GM→UB→GM 搬运，单行片段超过 64 KiB 时自动回退到逐行分块路径。策略只依赖 dtype、shape、UB 容量和硬件核数，不包含公开 shape 或 split 序列判断。
+只有输入段32B对齐、输出行大于UB且旧路径明显过度切任务时才启用；其余情况走 V9 fallback。该版本目前是实验代码，还没有替换榜单稳定版本。
 
-详细结果见 [IMPLEMENTATION_V4.md](IMPLEMENTATION_V4.md)。
+详细算法、API单位、失败修复和性能数据见 [VIRTUAL_AXIS_2D_20260803.md](VIRTUAL_AXIS_2D_20260803.md)。
 
 ## 验证状态
 
 - [x] CANN 8.5 / Ascend 910B4 编译并全新安装成功。
-- [x] 8/8 扩展回归通过：四种 dtype、多种轴、非对齐、空切片、64 输入和大于 UB 的回退路径。
-- [x] 官方公开用例准确性通过。
-- [x] 三次独立官方运行：8.70、8.92、8.84 μs；中位数 8.84 μs。
+- [x] 固定种子 1000/1000 泛化回归通过，覆盖四种 dtype、rank 1--6、正负轴、空切片、非对齐和大于 UB 的路径。
+- [x] 官方公开非对齐用例走 fallback，准确性和性能通过，实测 8.6095 μs。
+- [x] 9 输入高度不均匀用例中位数从 39.260 降至 37.361 μs，改善 4.84%。
+- [x] 64 输入高度不均匀用例中位数从 45.541 降至 41.041 μs，改善 9.88%。
+- [ ] 尚未生成比赛提交包；需要扩大 shape 矩阵后才能决定是否提交。
 
 ## 文件说明
 
 - `op_host/`：算子定义、shape/dtype 推导、tiling 和标准 `aclnnConcat` ABI 适配。
 - `op_kernel/`：AscendC 核函数。
 - `tests/official/`：官方测试工程原样留存。
-- `tests/regression_v3.py`：扩展正确性回归（继续适用于 V4）。
+- `tests/concat_profile_matrix.py`：包含本轮9输入和64输入对照用例。
 - `benchmarks/`：保留版本与被拒绝实验的 `msprof` 数据。
+- `submissions/20260801_output_contiguous/Concat.zip`：历史 V10 包，不代表当前 V11 实验代码。
