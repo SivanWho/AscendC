@@ -13,6 +13,11 @@ TILING_DATA_FIELD_DEF(uint32_t, blockDim);
 TILING_DATA_FIELD_DEF(uint32_t, tileBytes);
 TILING_DATA_FIELD_DEF(uint32_t, rowsPerTask);
 TILING_DATA_FIELD_DEF(uint32_t, rowTaskCount);
+TILING_DATA_FIELD_DEF(uint32_t, axis);
+TILING_DATA_FIELD_DEF(uint32_t, virtualTileBytes);
+TILING_DATA_FIELD_DEF(uint32_t, outerPerVirtualTile);
+TILING_DATA_FIELD_DEF(uint32_t, virtualTileCount);
+TILING_DATA_FIELD_DEF(uint32_t, outerTileCount);
 TILING_DATA_FIELD_DEF(uint64_t, outer);
 TILING_DATA_FIELD_DEF(uint64_t, inner);
 TILING_DATA_FIELD_DEF(uint64_t, outputAxis);
@@ -20,7 +25,7 @@ TILING_DATA_FIELD_DEF_ARR(uint64_t, CONCAT_MAX_INPUTS, axisSizes);
 TILING_DATA_FIELD_DEF_ARR(uint64_t, CONCAT_MAX_INPUTS, axisPrefixes);
 END_TILING_DATA_DEF;
 
-REGISTER_TILING_DATA_CLASS(ConcatCustom, ConcatTilingData)
+REGISTER_TILING_DATA_CLASS(Concat, ConcatTilingData)
 }  // namespace optiling
 
 #endif

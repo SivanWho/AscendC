@@ -1,0 +1,6 @@
+label,case,inputs,payload_bytes,samples,block_dim,task_min_us,task_median_us,task_mean_us,task_max_us,d2d_floor_us,warmed_chain_floor_us,actual_over_d2d,actual_over_chain_floor,payload_gbps,d2d_payload_util_pct,aiv_time_us,aiv_total_cycles,estimated_aiv_mhz,scalar_ratio,mte2_ratio,mte3_ratio,icache_miss_rate
+base32_rerun,official,9,65536,290,9,8.0,8.6,8.6131,9.521,0.086,3.44,100.05,2.5,7.62,1.0,6.4065,95138.0,1650.03,0.469,0.452,0.1115,0.0
+base32_rerun,aligned_last_many64,64,2097152,290,40,53.721,55.661,55.8311,59.322,2.7508,3.44,20.23,16.18,37.68,4.94,45.0365,2972401.5,1650.0,0.088,0.6925,0.229,0.0
+base32_rerun,aligned_middle_many64,64,327680,290,40,9.04,10.84,10.7725,13.26,0.4298,3.44,25.22,3.15,30.23,3.96,8.121,535995.5,1650.03,0.486,0.444,0.132,0.0
+base32_rerun,virtual_uneven9,9,11268096,290,40,35.501,36.961,36.9716,38.601,14.7799,14.7799,2.5,2.5,304.86,39.99,34.188,2256396.0,1649.99,0.144,0.583,0.308,0.0
+base32_rerun,virtual_uneven64,64,12601344,290,40,37.601,39.301,39.4211,41.701,16.5287,16.5287,2.38,2.38,320.64,42.06,36.0105,2376717.0,1650.02,0.3115,0.578,0.311,0.0

@@ -1,4 +1,4 @@
-#include "concat_custom_tiling.h"
+#include "concat_tiling.h"
 #include "graph/utils/type_utils.h"
 #include "register/op_def_registry.h"
 #include "tiling/platform/platform_ascendc.h"
@@ -7,19 +7,23 @@
 #include <cstdint>
 
 namespace {
-uint32_t DtypeCode(ge::DataType dt)
+bool DtypeCode(ge::DataType dt, uint32_t &code)
 {
     switch (dt) {
         case ge::DT_FLOAT16:
-            return 0;
+            code = 0;
+            return true;
         case ge::DT_FLOAT:
-            return 1;
+            code = 1;
+            return true;
         case ge::DT_INT32:
-            return 2;
+            code = 2;
+            return true;
         case ge::DT_INT8:
-            return 3;
+            code = 3;
+            return true;
         default:
-            return 0;
+            return false;
     }
 }
 
@@ -42,13 +46,27 @@ uint64_t CeilDiv(uint64_t value, uint64_t divisor)
 {
     return (value + divisor - 1) / divisor;
 }
+
+uint64_t AlignUp32(uint64_t value)
+{
+    return (value + 31) / 32 * 32;
+}
+
+bool CheckedMul(uint64_t lhs, uint64_t rhs, uint64_t &result)
+{
+    if (lhs != 0 && rhs > UINT64_MAX / lhs) {
+        return false;
+    }
+    result = lhs * rhs;
+    return true;
+}
 }  // namespace
 
 namespace optiling {
 static ge::graphStatus TilingFunc(gert::TilingContext *context)
 {
     const uint32_t inputCount = static_cast<uint32_t>(context->GetComputeNodeInputNum());
-    if (inputCount == 0 || inputCount > CONCAT_MAX_INPUTS) {
+    if (inputCount == 0) {
         return ge::GRAPH_FAILED;
     }
     const auto *attrs = context->GetAttrs();
@@ -62,40 +80,76 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     if (dim < 0) {
         dim += rank;
     }
-    if (rank <= 0 || dim < 0 || dim >= rank) {
+    if (rank <= 0 || rank > 8 || dim < 0 || dim >= rank) {
         return ge::GRAPH_FAILED;
     }
 
     uint64_t outer = 1, inner = 1;
     for (int32_t i = 0; i < dim; ++i) {
-        outer *= static_cast<uint64_t>(shape.GetDim(i));
+        const int64_t extent = shape.GetDim(i);
+        if (extent < 0 || !CheckedMul(outer, static_cast<uint64_t>(extent), outer)) {
+            return ge::GRAPH_FAILED;
+        }
     }
     for (int32_t i = static_cast<int32_t>(dim) + 1; i < rank; ++i) {
-        inner *= static_cast<uint64_t>(shape.GetDim(i));
+        const int64_t extent = shape.GetDim(i);
+        if (extent < 0 || !CheckedMul(inner, static_cast<uint64_t>(extent), inner)) {
+            return ge::GRAPH_FAILED;
+        }
     }
 
+    const auto dtype = context->GetDynamicInputDesc(0, 0)->GetDataType();
+    uint32_t dtypeCode = 0;
+    if (!DtypeCode(dtype, dtypeCode)) {
+        return ge::GRAPH_FAILED;
+    }
     uint64_t axisSizes[CONCAT_MAX_INPUTS] = {};
     uint64_t prefixes[CONCAT_MAX_INPUTS] = {};
     uint64_t outputAxis = 0;
     uint64_t maxAxisSize = 0;
+    uint64_t nonEmptyInputCount = 0;
+    bool allFlatInputsAligned32 = true;
     for (uint32_t i = 0; i < inputCount; ++i) {
         const auto &cur = context->GetDynamicInputShape(0, i)->GetStorageShape();
         if (cur.GetDimNum() != static_cast<size_t>(rank)) {
             return ge::GRAPH_FAILED;
         }
-        prefixes[i] = outputAxis;
-        axisSizes[i] = static_cast<uint64_t>(cur.GetDim(dim));
-        maxAxisSize = std::max(maxAxisSize, axisSizes[i]);
-        outputAxis += axisSizes[i];
+        if (context->GetDynamicInputDesc(0, i)->GetDataType() != dtype) {
+            return ge::GRAPH_FAILED;
+        }
+        for (int32_t axis = 0; axis < rank; ++axis) {
+            const int64_t extent = cur.GetDim(axis);
+            if (extent < 0 || (axis != dim && extent != shape.GetDim(axis))) {
+                return ge::GRAPH_FAILED;
+            }
+        }
+        const uint64_t axisSize = static_cast<uint64_t>(cur.GetDim(dim));
+        uint64_t flatInputElems = 0;
+        uint64_t flatInputBytes = 0;
+        if (!CheckedMul(axisSize, inner, flatInputElems) ||
+            !CheckedMul(flatInputElems, DtypeBytes(dtype), flatInputBytes)) {
+            return ge::GRAPH_FAILED;
+        }
+        allFlatInputsAligned32 =
+            allFlatInputsAligned32 && (flatInputBytes % 32 == 0);
+        if (i < CONCAT_MAX_INPUTS) {
+            prefixes[i] = outputAxis;
+            axisSizes[i] = axisSize;
+        }
+        maxAxisSize = std::max(maxAxisSize, axisSize);
+        nonEmptyInputCount += axisSize != 0;
+        if (axisSize > UINT64_MAX - outputAxis) {
+            return ge::GRAPH_FAILED;
+        }
+        outputAxis += axisSize;
     }
 
     auto platform = platform_ascendc::PlatformAscendC(context->GetPlatformInfo());
-    const uint32_t availableCores = std::max<uint32_t>(1, platform.GetCoreNum());
+    const uint32_t availableCores = std::max<uint32_t>(1, platform.GetCoreNumAiv());
 
     uint64_t ubBytes = 0;
     platform.GetCoreMemSize(platform_ascendc::CoreMemType::UB, ubBytes);
     const uint32_t tileBytes = static_cast<uint32_t>(std::min<uint64_t>(64 * 1024, ubBytes / 2));
-    const auto dtype = context->GetDynamicInputDesc(0, 0)->GetDataType();
     const uint32_t elemBytes = DtypeBytes(dtype);
     if (elemBytes == 0) {
         return ge::GRAPH_FAILED;
@@ -103,27 +157,122 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
 
     // Each task batches several outer rows for one input into one 2-D DMA.  Cap
     // the batch both by UB capacity and by the amount of parallelism available.
-    const uint64_t maxSegmentBytes = std::max<uint64_t>(1, maxAxisSize * inner * elemBytes);
-    const uint64_t rowsForUb = std::max<uint64_t>(1, tileBytes / maxSegmentBytes);
+    uint64_t maxSegmentElems = 0;
+    uint64_t maxSegmentBytes = 0;
+    uint64_t outputElems = 0;
+    uint64_t inputBytes = 0;
+    if (!CheckedMul(maxAxisSize, inner, maxSegmentElems) ||
+        !CheckedMul(maxSegmentElems, elemBytes, maxSegmentBytes) ||
+        !CheckedMul(outer, outputAxis, outputElems) ||
+        !CheckedMul(outputElems, inner, outputElems) ||
+        !CheckedMul(outputElems, elemBytes, inputBytes)) {
+        return ge::GRAPH_FAILED;
+    }
+    const uint64_t maxPaddedSegmentBytes =
+        std::max<uint64_t>(1, AlignUp32(maxSegmentBytes));
+    const uint64_t rowsForUb =
+        std::max<uint64_t>(1, tileBytes / maxPaddedSegmentBytes);
     constexpr uint64_t BYTES_PER_CORE = 16 * 1024;
-    const uint64_t inputBytes = outer * outputAxis * inner * elemBytes;
     const uint64_t targetCores = std::min<uint64_t>(
         availableCores, std::max<uint64_t>(1, CeilDiv(inputBytes, BYTES_PER_CORE)));
     const uint64_t chunksPerInput = std::max<uint64_t>(1, CeilDiv(targetCores, inputCount));
     const uint64_t rowsForParallel = outer == 0 ? 1 : CeilDiv(outer, chunksPerInput);
     const uint32_t rowsPerTask = static_cast<uint32_t>(
-        std::min<uint64_t>(65535, std::max<uint64_t>(1, std::min(rowsForUb, rowsForParallel))));
-    const uint32_t rowTaskCount = outer == 0 ? 0 : static_cast<uint32_t>(CeilDiv(outer, rowsPerTask));
-    const uint64_t tasks = static_cast<uint64_t>(rowTaskCount) * inputCount;
-    const uint32_t blockDim = std::max<uint32_t>(1, std::min<uint64_t>(availableCores, tasks));
+        std::min<uint64_t>(4095, std::max<uint64_t>(1, std::min(rowsForUb, rowsForParallel))));
+    const uint64_t rowTaskCount64 = outer == 0 ? 0 : CeilDiv(outer, rowsPerTask);
+    if (rowTaskCount64 > UINT32_MAX) {
+        return ge::GRAPH_FAILED;
+    }
+    const uint32_t rowTaskCount = static_cast<uint32_t>(rowTaskCount64);
+    const uint64_t smallTaskCount = static_cast<uint64_t>(rowTaskCount) * inputCount;
+
+    // A segment that exceeds one UB tile is decomposed into independent
+    // row-tile tasks.  This lets a large dim-0 concat use all available AIVs
+    // instead of being limited to one task per input.
+    const bool hasLongSegments = maxSegmentBytes > tileBytes;
+    uint64_t naturalLongTasks = 0;
+    if (!CheckedMul(outer, nonEmptyInputCount, naturalLongTasks)) {
+        return ge::GRAPH_FAILED;
+    }
+    const bool useParallelLongPath =
+        hasLongSegments &&
+        maxSegmentBytes >= static_cast<uint64_t>(tileBytes) * 4 &&
+        naturalLongTasks < availableCores;
+    uint64_t longTaskCount = 0;
+    if (useParallelLongPath) {
+        for (uint32_t i = 0; i < inputCount; ++i) {
+            const auto &cur = context->GetDynamicInputShape(0, i)->GetStorageShape();
+            uint64_t segmentElems = 0;
+            uint64_t segmentBytes = 0;
+            uint64_t inputTileTasks = 0;
+            if (!CheckedMul(static_cast<uint64_t>(cur.GetDim(dim)), inner, segmentElems) ||
+                !CheckedMul(segmentElems, elemBytes, segmentBytes) ||
+                !CheckedMul(outer, CeilDiv(segmentBytes, tileBytes), inputTileTasks) ||
+                inputTileTasks > UINT64_MAX - longTaskCount) {
+                return ge::GRAPH_FAILED;
+            }
+            longTaskCount += inputTileTasks;
+        }
+    }
+    uint64_t outputRowElems = 0;
+    uint64_t outputRowBytes = 0;
+    if (!CheckedMul(outputAxis, inner, outputRowElems) ||
+        !CheckedMul(outputRowElems, elemBytes, outputRowBytes)) {
+        return ge::GRAPH_FAILED;
+    }
+
+    // Virtual-axis 2-D grid.  Each task owns several outer rows and one
+    // virtual-axis byte interval.  Direct MTE2 placement into a row-major UB
+    // tile is only safe when every physical segment starts on a 32-byte
+    // boundary.  Keep all other geometries on the proven input-centric path.
+    constexpr uint64_t VIRTUAL_TILE_TARGET_BYTES = 32 * 1024;
+    const uint32_t virtualTileBytes = static_cast<uint32_t>(std::min<uint64_t>(
+        VIRTUAL_TILE_TARGET_BYTES, std::max<uint64_t>(32, outputRowBytes)));
+    const uint32_t outerPerVirtualTile = static_cast<uint32_t>(std::min<uint64_t>(
+        4095, std::max<uint64_t>(1, tileBytes / virtualTileBytes)));
+    const uint64_t virtualTileCount64 =
+        outputRowBytes == 0 ? 0 : CeilDiv(outputRowBytes, virtualTileBytes);
+    const uint64_t outerTileCount64 =
+        outer == 0 ? 0 : CeilDiv(outer, outerPerVirtualTile);
+    uint64_t virtualTaskCount = 0;
+    if (virtualTileCount64 > UINT32_MAX || outerTileCount64 > UINT32_MAX ||
+        !CheckedMul(virtualTileCount64, outerTileCount64, virtualTaskCount)) {
+        return ge::GRAPH_FAILED;
+    }
+    const bool useLargeRowVirtual2D =
+        outputRowBytes > tileBytes &&
+        smallTaskCount >= static_cast<uint64_t>(availableCores) * 4 &&
+        virtualTaskCount >= availableCores;
+    // A whole output row can also be the virtual tile.  This path targets
+    // many aligned narrow inputs whose old per-input MTE3 writes are highly
+    // strided.  Keep a payload floor and at least half-machine parallelism so
+    // small control-bound cases remain on the stable input-centric path.
+    const bool useWholeRowVirtual2D =
+        inputCount >= 32 && outputRowBytes >= 1024 &&
+        outputRowBytes <= tileBytes && inputBytes >= 1024 * 1024 &&
+        virtualTaskCount >= std::max<uint64_t>(1, availableCores / 2);
+    const bool useVirtual2DPath =
+        inputCount >= 9 && inputCount <= CONCAT_MAX_INPUTS &&
+        allFlatInputsAligned32 && outputRowBytes <= UINT32_MAX &&
+        !hasLongSegments &&
+        (useLargeRowVirtual2D || useWholeRowVirtual2D);
+    const uint64_t taskCount = useParallelLongPath ? longTaskCount : smallTaskCount;
+    const uint32_t blockDim = useVirtual2DPath
+        ? std::max<uint32_t>(1, std::min<uint64_t>(availableCores, virtualTaskCount))
+        : std::max<uint32_t>(1, std::min<uint64_t>(availableCores, taskCount));
 
     ConcatTilingData tiling;
     tiling.set_inputCount(inputCount);
-    tiling.set_dtypeCode(DtypeCode(dtype));
+    tiling.set_dtypeCode(dtypeCode);
     tiling.set_blockDim(blockDim);
     tiling.set_tileBytes(std::max<uint32_t>(32, tileBytes / 32 * 32));
     tiling.set_rowsPerTask(rowsPerTask);
     tiling.set_rowTaskCount(rowTaskCount);
+    tiling.set_axis(static_cast<uint32_t>(dim));
+    tiling.set_virtualTileBytes(virtualTileBytes);
+    tiling.set_outerPerVirtualTile(outerPerVirtualTile);
+    tiling.set_virtualTileCount(static_cast<uint32_t>(virtualTileCount64));
+    tiling.set_outerTileCount(static_cast<uint32_t>(outerTileCount64));
     tiling.set_outer(outer);
     tiling.set_inner(inner);
     tiling.set_outputAxis(outputAxis);
@@ -132,6 +281,12 @@ static ge::graphStatus TilingFunc(gert::TilingContext *context)
     tiling.SaveToBuffer(context->GetRawTilingData()->GetData(), context->GetRawTilingData()->GetCapacity());
     context->GetRawTilingData()->SetDataSize(tiling.GetDataSize());
     context->SetBlockDim(blockDim);
+    // 0: one-shot/small single buffer; 1: under-parallelized long segments
+    // split into row-tile tasks; 2: long segments with sufficient natural
+    // task parallelism, retaining per-task double buffering; 3: aligned
+    // outer x virtual-axis 2-D tiles.
+    context->SetTilingKey(
+        useVirtual2DPath ? 3 : (useParallelLongPath ? 1 : (hasLongSegments ? 2 : 0)));
     context->GetWorkspaceSizes(1)[0] = 0;
     return ge::GRAPH_SUCCESS;
 }
@@ -152,10 +307,27 @@ static graphStatus InferShape(gert::InferShapeContext *context)
     if (dim < 0) {
         dim += rank;
     }
+    if (rank <= 0 || rank > 8 || dim < 0 || dim >= rank) {
+        return GRAPH_FAILED;
+    }
     int64_t sum = 0;
     const size_t count = context->GetComputeNodeInputNum();
     for (size_t i = 0; i < count; ++i) {
-        sum += context->GetDynamicInputShape(0, i)->GetDim(dim);
+        const gert::Shape *current = context->GetDynamicInputShape(0, i);
+        if (current == nullptr || current->GetDimNum() != first->GetDimNum()) {
+            return GRAPH_FAILED;
+        }
+        for (int32_t axis = 0; axis < rank; ++axis) {
+            const int64_t extent = current->GetDim(axis);
+            if (extent < 0 || (axis != dim && extent != first->GetDim(axis))) {
+                return GRAPH_FAILED;
+            }
+        }
+        const int64_t axisSize = current->GetDim(dim);
+        if (axisSize > INT64_MAX - sum) {
+            return GRAPH_FAILED;
+        }
+        sum += axisSize;
     }
     out->SetDim(dim, sum);
     return GRAPH_SUCCESS;
@@ -169,9 +341,9 @@ static graphStatus InferDataType(gert::InferDataTypeContext *context)
 }  // namespace ge
 
 namespace ops {
-class ConcatCustom : public OpDef {
+class Concat : public OpDef {
 public:
-    explicit ConcatCustom(const char *name) : OpDef(name)
+    explicit Concat(const char *name) : OpDef(name)
     {
         this->Input("inputs")
             .ParamType(DYNAMIC)
@@ -183,9 +355,18 @@ public:
             .Format({ge::FORMAT_ND, ge::FORMAT_ND, ge::FORMAT_ND, ge::FORMAT_ND});
         this->Attr("dim").AttrType(OPTIONAL).Int(0);
         this->SetInferShape(ge::InferShape).SetInferDataType(ge::InferDataType);
-        this->AICore().SetTiling(optiling::TilingFunc).AddConfig("ascend910b");
+        OpAICoreConfig config;
+        config.DynamicCompileStaticFlag(true)
+            .DynamicFormatFlag(false)
+            .DynamicRankSupportFlag(true)
+            .DynamicShapeSupportFlag(true)
+            .NeedCheckSupportFlag(false)
+            .PrecisionReduceFlag(true)
+            .ExtendCfgInfo("opFile.value", "concat");
+        this->AICore().SetTiling(optiling::TilingFunc);
+        this->AICore().AddConfig("ascend910b", config);
     }
 };
 
-OP_ADD(ConcatCustom);
+OP_ADD(Concat);
 }  // namespace ops

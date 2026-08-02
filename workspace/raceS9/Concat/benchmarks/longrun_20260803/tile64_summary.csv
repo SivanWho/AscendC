@@ -1,0 +1,3 @@
+label,case,inputs,payload_bytes,samples,block_dim,task_min_us,task_median_us,task_mean_us,task_max_us,d2d_floor_us,warmed_chain_floor_us,actual_over_d2d,actual_over_chain_floor,payload_gbps,d2d_payload_util_pct,aiv_time_us,aiv_total_cycles,estimated_aiv_mhz,scalar_ratio,mte2_ratio,mte3_ratio,icache_miss_rate
+tile64,virtual_uneven9,9,11268096,290,40,35.241,36.9905,36.9829,38.521,14.7799,14.7799,2.5,2.5,304.62,39.96,31.6305,2087604.0,1649.99,0.156,0.611,0.275,0.0
+tile64,virtual_uneven64,64,12601344,290,40,37.94,40.241,40.3617,43.481,16.5287,16.5287,2.43,2.43,313.15,41.07,32.36,2135732.0,1649.98,0.2655,0.584,0.294,0.0

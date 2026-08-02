@@ -1,0 +1,5 @@
+case,version,input_count,task_count,block_dim,payload_bytes,task_median_us,aiv_median_us,equivalent_cycles_per_core,payload_gbps,aggregate_traffic_gbps,dmi_floor_us,actual_over_floor,payload_bandwidth_utilization_percent
+uneven9,V9,9,1152,40,11268096,39.260,36.845,60789,287.0,574.0,14.780,2.66,37.6
+uneven9,Virtual2D,9,192,40,11268096,37.361,34.385,56730,301.6,603.2,14.780,2.53,39.6
+uneven64,V9,64,1024,40,12601344,45.541,41.709,68819,276.7,553.4,16.529,2.76,36.3
+uneven64,Virtual2D,64,224,40,12601344,41.041,37.731,62252,307.0,614.1,16.529,2.48,40.3

@@ -36,3 +36,87 @@ Three independent official runs reported 8.70, 8.92, and 8.84 us; their median i
 ## ABI note
 
 CANN already defines an operator named `Concat`. Registering a custom dynamic-input operator under that internal name can collide with built-in metadata. Register an internal name such as `ConcatCustom`, let opbuild generate `aclnnConcatCustom`, and expose compatibility wrappers for both `aclnnConcatGetWorkspaceSize` and `aclnnConcat` so the untouched official extension finds the standard symbols.
+
+## Many-input metadata path
+
+When the dynamic input count exceeds the fixed tiling arrays, do not recompute
+each axis prefix by scanning descriptors from input zero for every task. That
+pattern is O(N²) and becomes scalar-bound. Keep a monotonically advancing
+descriptor cursor per core and row task so each core scans the list once.
+
+Starting every available vector core can still multiply descriptor traffic.
+For the out-of-line metadata path, cap block dim by a payload-size target while
+leaving the small inline path unchanged. This optimization improved a synthetic
+256-input case from 56.90 us to 34.23 us, but the resulting submission
+regressed by about 2 us on the private judge. Treat it as a synthetic diagnostic,
+not a validated S9 submission optimization. Do not infer a hidden case from one
+large public timing component.
+
+Appending a prefix table to raw tiling data was rejected because the available
+tiling buffer could not reliably hold the extra N+1 64-bit entries. Capacity
+failures must be tested at 129 and the ACLNN maximum of 256 inputs before using
+such a scheme.
+
+## TQueBind double buffering for long copy chains
+
+For a pure movement kernel, use
+`TQueBind<VECIN, VECOUT, 2>` with two 64 KiB buffers to let MTE2 for the next
+tile overlap MTE3 for the previous tile. Follow the queue lifecycle
+`Alloc -> MTE2 -> EnQue -> DeQue -> MTE3 -> Free`; do not substitute fixed
+cycle delays.
+
+The benefit depends on the number of tiles processed sequentially by one core.
+On CANN 8.5 / Ascend 910B4, a two-core contiguous dim-0 case with about 9 MiB of
+minimum GM traffic improved from 51.646 us to 31.438 us (39.1%). Per-input
+segments of 128, 256, and 512 KiB improved by 4.1%, 14.4%, and 25.7%,
+respectively. Sixteen KiB buffers lost to queue and DMA command overhead;
+32 KiB reached 37.397 us and 64 KiB reached 31.438 us on the large case.
+
+The nine-input public geometry stayed within noise: three single-buffer medians
+were 8.680, 8.670, and 8.619 us; three double-buffer medians were 8.709, 8.759,
+and 8.619 us. Therefore describe this as a long-tile-chain optimization, not a
+universal Concat speedup.
+
+For correctness, test queue reuse with non-aligned tails, empty tensors, all
+supported dtypes, 16/32/64 KiB boundaries, row counts around the DataCopy block
+count limit, and reproducible random stress cases. Host validation should reject
+mixed dtypes, mismatched non-concat axes, negative runtime extents, and shape
+arithmetic overflow; those checks do not add AI Core time.
+
+## Whole-row virtual-axis scheduling
+
+For many aligned, small segments, assigning one task per input leaves each core
+with a short DMA chain and repeatedly pays task and descriptor overhead. A better
+mapping treats the concatenated output row as a virtual contiguous axis. A task
+owns one or more complete output rows, walks the input descriptors once, and
+copies every input segment directly into its final output offset. This is a
+scheduling change, not a semantic shortcut: it remains shape-driven and does not
+encode published cases.
+
+Use the whole-row path only when the row fits the DMA/API limits and the geometry
+can amortize its longer per-task command chain. The validated guard used aligned
+segments, 32--128 inputs, output rows from 1 KiB to 64 KiB, at least 1 MiB total
+payload, and enough row tasks to occupy available vector cores. Retain the
+per-input 2-D DMA and over-UB tiled paths as fallbacks.
+
+On CANN 8.5 / Ascend 910B4, the target 64-input aligned-last case improved from
+55.661 us to 13.7505 us (75.30%). Five additional many-input families improved
+by 19.65% to 65.37%, while an out-of-domain negative control changed by -0.30%.
+The final source passed 1000/1000 shape-driven regression cases covering
+43,357,777 bytes and also passed a fresh-install official Case1 smoke test.
+
+The lesson is to optimize the mapping between logical work and hardware tasks
+before tuning event choreography. For each candidate shape, record minimum GM
+traffic, a bandwidth roofline, measured task duration, effective bandwidth,
+D2D/MTE utilization, block count, and active strategy. Large gaps on tiny
+segments usually point to launch/descriptor overhead rather than raw GM
+bandwidth.
+
+## Submission provenance
+
+S9 online scoring is a ZIP upload workflow, not a Git-triggered judge. Git is
+still valuable as the provenance layer: bind every ZIP SHA-256 and run-package
+SHA-256 to a commit, record the CANN/SoC environment and fresh-install tests,
+then upload the package made by the official `zip_op.sh`. The separate GitCode
+requirement on the S9 page applies to open-sourcing award-winning entries and
+merging a PR into the organizer-designated repository.

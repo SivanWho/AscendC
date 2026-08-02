@@ -1,0 +1,6 @@
+label,case,inputs,payload_bytes,samples,block_dim,task_min_us,task_median_us,task_mean_us,task_max_us,d2d_floor_us,warmed_chain_floor_us,actual_over_d2d,actual_over_chain_floor,payload_gbps,d2d_payload_util_pct,aiv_time_us,aiv_total_cycles,estimated_aiv_mhz,scalar_ratio,mte2_ratio,mte3_ratio,icache_miss_rate
+wholerow,official,9,65536,290,9,8.04,8.5,8.5309,9.34,0.086,3.44,98.88,2.47,7.71,1.01,6.3675,94557.5,1650.0,0.474,0.449,0.109,0.0
+wholerow,aligned_last_many64,64,2097152,290,32,11.541,13.7505,13.8552,16.86,2.7508,3.44,5.0,4.0,152.51,20.0,11.0855,585295.0,1649.95,0.8045,0.578,0.054,0.0
+wholerow,aligned_middle_many64,64,327680,290,40,8.901,10.8405,10.7589,13.14,0.4298,3.44,25.22,3.15,30.23,3.96,8.1215,536016.5,1649.99,0.489,0.439,0.132,0.0
+wholerow,virtual_uneven9,9,11268096,290,40,35.301,36.511,36.5301,37.941,14.7799,14.7799,2.47,2.47,308.62,40.48,33.666,2221973.5,1650.01,0.146,0.589,0.301,0.0
+wholerow,virtual_uneven64,64,12601344,290,40,38.901,40.561,40.7031,43.401,16.5287,16.5287,2.45,2.45,310.68,40.75,37.631,2483637.5,1649.99,0.298,0.584,0.308,0.0
